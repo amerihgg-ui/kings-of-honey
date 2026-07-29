@@ -7,7 +7,7 @@
   <meta name="description" content="ملوك العسل - متجر إلكتروني ونظام إدارة المبيعات والمخزون والمحاسبة" />
   <link rel="icon" href="assets/branding/app-icon-192.png" type="image/png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <title>ملوك العسل Commerce V7.3.3</title>
+  <title>ملوك العسل Commerce V7.4</title>
   <style>
     :root{
       --bg:#07101a;--bg2:#0d1824;--panel:#111e2b;--panel2:#182838;--panel3:#213447;
@@ -268,6 +268,30 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
 @media(max-width:760px){.store-page{padding-top:104px}.store-header{height:104px}.store-header-main{height:62px}.store-category-nav{height:42px}.store-main{padding-top:10px}.store-hero{min-height:auto}.store-hero-copy{padding:28px 22px 24px}.store-hero-photo{min-height:250px}.store-category-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 22px}.store-category-card{display:block;text-align:center;min-height:82px;padding:10px 7px}.store-category-icon{margin:0 auto 6px}.store-category-card small{display:none}.customer-auth-body{padding:2px 18px 22px}.customer-auth-body h2{font-size:21px}.customer-account-head{grid-template-columns:auto 1fr}.customer-account-head .btn{grid-column:1/-1;width:100%}}
 @media(max-width:470px){.store-category-cards{grid-template-columns:repeat(3,minmax(0,1fr))}.store-category-card strong{font-size:12px}.store-category-icon{width:43px;height:43px;font-size:22px}.customer-auth-logo{height:64px}.social-btn{height:50px}}
 
+
+
+/* ===== Commerce V7.4 — Responsive cinematic storefront hero ===== */
+.store-cinematic-hero{
+  position:relative;width:100%;overflow:hidden;background:#090604;
+  isolation:isolate;box-shadow:0 20px 54px rgba(47,26,10,.16)
+}
+.store-cinematic-video{display:block;width:100%;height:100%;object-fit:cover;background:#090604}
+.store-cinematic-desktop{height:clamp(360px,37.5vw,720px);aspect-ratio:8/3}
+.store-cinematic-mobile{display:none;aspect-ratio:4/5}
+.store-cinematic-shade{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.05) 58%,rgba(0,0,0,.38) 100%)}
+.store-cinematic-action{position:absolute;z-index:2;inset:auto 0 24px;display:flex;justify-content:center;padding-inline:16px}
+.store-cinematic-action .btn{min-width:175px;height:48px;border:1px solid rgba(255,255,255,.28);box-shadow:0 14px 34px rgba(0,0,0,.28),0 0 0 5px rgba(255,255,255,.06)}
+.store-cinematic-action .btn:hover{transform:translateY(-3px) scale(1.015)}
+@media(max-width:760px){
+  .store-cinematic-desktop{display:none}
+  .store-cinematic-mobile{display:block;width:100%;height:auto;min-height:430px;max-height:760px;object-fit:cover}
+  .store-cinematic-action{bottom:18px}
+  .store-cinematic-action .btn{height:46px;min-width:160px}
+}
+@media(prefers-reduced-motion:reduce){
+  .store-cinematic-video{animation:none}
+}
+
 </style>
 </head>
 <body>
@@ -297,6 +321,18 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
         <button class="store-nav-offer" data-store-scroll="products">✦ عروض مختارة</button>
       </nav>
     </header>
+    <section id="storeCinematicHero" class="store-cinematic-hero" aria-label="فيديو ترحيبي لملوك العسل">
+      <video class="store-cinematic-video store-cinematic-desktop" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+        <source src="assets/videos/kings_of_honey_hq_desktop_fixed.mp4" type="video/mp4" />
+      </video>
+      <video class="store-cinematic-video store-cinematic-mobile" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+        <source src="assets/videos/kings_of_honey_hq_mobile_fixed.mp4" type="video/mp4" />
+      </video>
+      <div class="store-cinematic-shade" aria-hidden="true"></div>
+      <div class="store-cinematic-action">
+        <button class="btn btn-gold" data-store-scroll="products">تصفح المنتجات</button>
+      </div>
+    </section>
     <main id="storeContent" class="store-main"></main>
     <nav class="store-mobile-nav" aria-label="التنقل السريع">
       <button class="active" data-action="store-home"><span>⌂</span>الرئيسية</button>
@@ -332,7 +368,6 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
         <p>ادخل بحسابك مرة واحدة، وسنحفظ جلستك لتتابع طلباتك وتكمل الشراء بسهولة.</p>
         <div class="social-login">
           <button class="social-btn google" data-social-login="google"><span class="oauth-icon">G</span><span>المتابعة باستخدام Google</span></button>
-          <button class="social-btn facebook" data-social-login="facebook"><span class="oauth-icon">f</span><span>المتابعة باستخدام Facebook</span></button>
         </div>
         <div class="auth-privacy-note"><span>🔒</span><span>لن ننشر أي محتوى على حسابك.</span></div>
         <div class="store-divider">أو</div>
@@ -631,10 +666,6 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
     const physicalCount=allVisible.filter(p=>p.type!=='digital').length;
     const digitalCount=allVisible.filter(p=>p.type==='digital').length;
     const cartTotal=storeCart.reduce((s,x)=>s+num(x.qty)*num(x.price),0);
-    const heroPhysical=allVisible.find(p=>p.type!=='digital')||allVisible[0];
-    const heroDigital=allVisible.find(p=>p.type==='digital')||allVisible[1]||heroPhysical;
-    const mainImage=heroPhysical?.image||'assets/products/clover-honey-main.webp';
-    const miniImage=heroDigital?.image||'assets/products/product-placeholder-honey.webp';
     const productCards=list.length?list.map((p,index)=>{
       const digital=p.type==='digital',available=digital||num(p.stock)>0;
       const stockLabel=digital?`حتى ${num(p.deviceLimit)||1} جهاز`:available?`متاح ${num(p.stock)}`:'نفد المخزون';
@@ -654,21 +685,6 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
       </article>`
     }).join(''):`<div class="store-empty"><img src="assets/products/product-placeholder-honey.webp" alt=""><div><h3>المتجر جاهز لاستقبال منتجاتك</h3><p>أضف المنتجات من لوحة التحكم وفعّل خيار الظهور في المتجر؛ وستظهر هنا فورًا بنفس الصور والأسعار.</p></div></div>`;
     $('#storeContent').innerHTML=`
-      <section class="store-hero">
-        <div class="store-hero-copy">
-          <span class="store-hero-eyebrow">✦ تجربة تسوق أبسط وأسرع</span>
-          <h1>${esc(state.settings.storeHeroTitle)}</h1>
-          <p>${esc(state.settings.storeHeroText)}</p>
-          <div class="store-hero-buttons"><button class="btn btn-gold" data-store-scroll="products">تسوّق الآن</button><button class="btn btn-soft" data-store-filter="digital">اكتشف الخدمات الرقمية</button></div>
-          <div class="store-hero-proof"><span><b>✓</b> طلب منظم</span><span><b>⌁</b> واتساب مباشر</span><span><b>🔐</b> تراخيص رقمية</span></div>
-        </div>
-        <div class="store-hero-photo">
-          <img class="store-hero-product-main" src="${mainImage}" alt="منتج مميز">
-          <img class="store-hero-product-mini" src="${miniImage}" alt="منتج إضافي">
-          <div class="store-hero-badge"><div><strong>${allVisible.length}</strong><br><small>منتج وخدمة</small></div></div>
-        </div>
-      </section>
-
       <section class="store-category-cards" aria-label="تصفح الأقسام">
         <button class="store-category-card ${storeFilter==='all'?'active':''}" data-store-filter="all"><span class="store-category-icon">✦</span><span><strong>كل المعروض</strong><small>${allVisible.length} منتج وخدمة في مكان واحد</small></span></button>
         <button class="store-category-card ${storeFilter==='physical'?'active':''}" data-store-filter="physical"><span class="store-category-icon">🍯</span><span><strong>منتجات طبيعية</strong><small>${physicalCount} منتج قابل للطلب والتوصيل</small></span></button>
@@ -740,7 +756,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
     const appTile=m=>`<article class="app-tile">${moduleCount(m.id)?`<span class="tile-count">${moduleCount(m.id)}</span>`:''}<button class="fav-btn ${favoriteIds().includes(m.id)?'active':''}" data-favorite-module="${m.id}" title="المفضلة">${favoriteIds().includes(m.id)?'★':'☆'}</button><button class="app-open" data-open-module="${m.id}"><div class="app-icon">${m.asset?`<img src="${assetSrc(m.asset)}" alt="${esc(m.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="emoji" style="display:none">${m.emoji}</span>`:`<span class="emoji">${m.emoji}</span>`}</div><strong>${esc(m.name)}</strong><small>${esc(m.desc)}</small></button></article>`;
     const results=q?globalResults(q):[];
     $('#launcherContent').innerHTML=`
-      <section class="launcher-hero v6-hero"><div class="content"><span class="badge b-gold">ملوك العسل Commerce V7.3.2</span><h1>أهلًا بك في لوحة التحكم 👋</h1><p>إدارة أبسط، أرقام أدق، وكل قسم يفتح في تبويب مستقل مع بقاء صفحة التطبيقات كما هي.</p><div class="hero-actions"><button class="btn btn-gold" data-action="quick-actions">＋ إجراء سريع</button><button class="btn btn-soft" data-action="command">⌕ بحث شامل <small>Ctrl+K</small></button></div><div class="hero-mini"><div><span>إجمالي المبيعات</span><strong>${money(c.revenue)}</strong></div><div><span>الطلبات المفتوحة</span><strong>${state.orders.filter(o=>!['تم التسليم','ملغية'].includes(o.status)).length}</strong></div><div><span>التنبيهات</span><strong>${moduleCount('alerts')}</strong></div><div><span>صافي المركز</span><strong class="${c.netAfterLiabilities<0?'negative':'positive'}">${money(c.netAfterLiabilities)}</strong></div></div></div><div class="photo"></div></section>
+      <section class="launcher-hero v6-hero"><div class="content"><span class="badge b-gold">ملوك العسل Commerce V7.4</span><h1>أهلًا بك في لوحة التحكم 👋</h1><p>إدارة أبسط، أرقام أدق، وكل قسم يفتح في تبويب مستقل مع بقاء صفحة التطبيقات كما هي.</p><div class="hero-actions"><button class="btn btn-gold" data-action="quick-actions">＋ إجراء سريع</button><button class="btn btn-soft" data-action="command">⌕ بحث شامل <small>Ctrl+K</small></button></div><div class="hero-mini"><div><span>إجمالي المبيعات</span><strong>${money(c.revenue)}</strong></div><div><span>الطلبات المفتوحة</span><strong>${state.orders.filter(o=>!['تم التسليم','ملغية'].includes(o.status)).length}</strong></div><div><span>التنبيهات</span><strong>${moduleCount('alerts')}</strong></div><div><span>صافي المركز</span><strong class="${c.netAfterLiabilities<0?'negative':'positive'}">${money(c.netAfterLiabilities)}</strong></div></div></div><div class="photo"></div></section>
       ${whatsappSetupBanner()}
       ${q?`<section class="apps-section"><div class="apps-section-title"><div><h2>نتائج البحث</h2><p>نتائج من الأقسام والبيانات المسجلة</p></div><span class="badge b-gold">${results.length} نتيجة</span></div>${results.length?`<div class="search-results">${results.map(r=>`<button class="search-result" data-open-module="${r.module}"><span class="result-ico">${r.icon}</span><span><strong>${esc(r.title)}</strong><small>${esc(r.kind)} · ${esc(r.meta)}</small></span></button>`).join('')}</div>`:`<div class="panel"><div class="empty" style="min-height:180px"><div><h3>لا توجد نتائج</h3><p>جرّب اسمًا أو رقم هاتف أو رقم فاتورة آخر.</p></div></div></div>`}</section>`:''}
       ${!q&&fav.length?`<section class="apps-section"><div class="apps-section-title"><div><h2>المفضلة</h2><p>الأقسام التي تستخدمها أكثر</p></div></div><div class="apps-grid">${fav.map(appTile).join('')}</div></section>`:''}
