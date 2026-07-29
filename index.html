@@ -7,7 +7,7 @@
   <meta name="description" content="ملوك العسل - متجر إلكتروني ونظام إدارة المبيعات والمخزون والمحاسبة" />
   <link rel="icon" href="assets/branding/app-icon-192.png" type="image/png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <title>ملوك العسل Commerce V7.3</title>
+  <title>ملوك العسل Commerce V7.3.1</title>
   <style>
     :root{
       --bg:#07101a;--bg2:#0d1824;--panel:#111e2b;--panel2:#182838;--panel3:#213447;
@@ -213,7 +213,7 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
 @media(max-width:700px){.setup-warning{align-items:flex-start;flex-wrap:wrap}.setup-warning button{width:100%}.play-detail-hero{grid-template-columns:76px 1fr}.play-detail-icon{width:76px;height:76px}.play-buy-button{grid-column:1/-1;width:100%}.play-main-preview{height:240px}.play-existing-gallery{grid-template-columns:repeat(2,1fr)}}
 
 
-/* ===== Commerce V7.3 — Clean storefront + Supabase customer auth ===== */
+/* ===== Commerce V7.3.1 — Supabase URL hotfix ===== */
 .store-page{padding-top:112px}
 .store-header{height:112px}
 .store-header-main{height:68px;max-width:1360px;padding-inline:18px}
@@ -470,7 +470,7 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
   const CUSTOMER_SESSION='kings_honey_customer_session_v7';
   const STORE_CART='kings_honey_store_cart_v7';
   const OAUTH_INTENT='kings_honey_oauth_intent_v7';
-  const SUPABASE_URL='https://githiojypngfqcfmopfde.supabase.co';
+  const SUPABASE_URL='https://githiojypnqfgcmfopfde.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY='sb_publishable_eNZfKOr73Hnxd_rgXt1jmA_mOdHOWNr';
   const OAUTH_RETURN_URL='https://armmerou530-beep.github.io/kings-of-honey/';
   const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'implicit',storageKey:'kings-honey-supabase-auth-v1'}});
@@ -502,7 +502,7 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
     {id:'settings',name:'الإعدادات والأمان',desc:'إعدادات النظام والنسخ الاحتياطية',asset:'assets/icons/icon-settings.png',emoji:'⚙️',tabs:['عام','النسخ الاحتياطية','السجل الأمني']}
   ];
   const blankState=()=>({
-    version:7.3,profileImages:{},
+    version:7.31,profileImages:{},
     settings:{shopName:'ملوك العسل',tagline:'نقاء الطبيعة.. جودة الملك',theme:'light',currency:'₺',lowStock:2,followUpDays:20,discountApproval:15,expenseReceiptThreshold:500,refundableFinanceAlertDays:30,accountPassword:'1234',adminGatePassword:'2009314',whatsappNumber:'',storeHeroTitle:'منتجات مختارة بعناية.. وخدمات رقمية تعمل من أي مكان',storeHeroText:'منتجات طبيعية وخدمات رقمية موثوقة في منصة واحدة.',storeEnabled:true,dailyBackup:true,favorites:['dashboard','sales','orders'],recentModules:[]},
     passwords:{admin:'2009314'},
     accounts:{openingCash:0,openingBank:0,closedMonths:[],reconciliations:[],monthlySnapshots:[]},
@@ -740,7 +740,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
     const appTile=m=>`<article class="app-tile">${moduleCount(m.id)?`<span class="tile-count">${moduleCount(m.id)}</span>`:''}<button class="fav-btn ${favoriteIds().includes(m.id)?'active':''}" data-favorite-module="${m.id}" title="المفضلة">${favoriteIds().includes(m.id)?'★':'☆'}</button><button class="app-open" data-open-module="${m.id}"><div class="app-icon">${m.asset?`<img src="${assetSrc(m.asset)}" alt="${esc(m.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="emoji" style="display:none">${m.emoji}</span>`:`<span class="emoji">${m.emoji}</span>`}</div><strong>${esc(m.name)}</strong><small>${esc(m.desc)}</small></button></article>`;
     const results=q?globalResults(q):[];
     $('#launcherContent').innerHTML=`
-      <section class="launcher-hero v6-hero"><div class="content"><span class="badge b-gold">ملوك العسل Commerce V7.2</span><h1>أهلًا بك في لوحة التحكم 👋</h1><p>إدارة أبسط، أرقام أدق، وكل قسم يفتح في تبويب مستقل مع بقاء صفحة التطبيقات كما هي.</p><div class="hero-actions"><button class="btn btn-gold" data-action="quick-actions">＋ إجراء سريع</button><button class="btn btn-soft" data-action="command">⌕ بحث شامل <small>Ctrl+K</small></button></div><div class="hero-mini"><div><span>إجمالي المبيعات</span><strong>${money(c.revenue)}</strong></div><div><span>الطلبات المفتوحة</span><strong>${state.orders.filter(o=>!['تم التسليم','ملغية'].includes(o.status)).length}</strong></div><div><span>التنبيهات</span><strong>${moduleCount('alerts')}</strong></div><div><span>صافي المركز</span><strong class="${c.netAfterLiabilities<0?'negative':'positive'}">${money(c.netAfterLiabilities)}</strong></div></div></div><div class="photo"></div></section>
+      <section class="launcher-hero v6-hero"><div class="content"><span class="badge b-gold">ملوك العسل Commerce V7.3.1</span><h1>أهلًا بك في لوحة التحكم 👋</h1><p>إدارة أبسط، أرقام أدق، وكل قسم يفتح في تبويب مستقل مع بقاء صفحة التطبيقات كما هي.</p><div class="hero-actions"><button class="btn btn-gold" data-action="quick-actions">＋ إجراء سريع</button><button class="btn btn-soft" data-action="command">⌕ بحث شامل <small>Ctrl+K</small></button></div><div class="hero-mini"><div><span>إجمالي المبيعات</span><strong>${money(c.revenue)}</strong></div><div><span>الطلبات المفتوحة</span><strong>${state.orders.filter(o=>!['تم التسليم','ملغية'].includes(o.status)).length}</strong></div><div><span>التنبيهات</span><strong>${moduleCount('alerts')}</strong></div><div><span>صافي المركز</span><strong class="${c.netAfterLiabilities<0?'negative':'positive'}">${money(c.netAfterLiabilities)}</strong></div></div></div><div class="photo"></div></section>
       ${whatsappSetupBanner()}
       ${q?`<section class="apps-section"><div class="apps-section-title"><div><h2>نتائج البحث</h2><p>نتائج من الأقسام والبيانات المسجلة</p></div><span class="badge b-gold">${results.length} نتيجة</span></div>${results.length?`<div class="search-results">${results.map(r=>`<button class="search-result" data-open-module="${r.module}"><span class="result-ico">${r.icon}</span><span><strong>${esc(r.title)}</strong><small>${esc(r.kind)} · ${esc(r.meta)}</small></span></button>`).join('')}</div>`:`<div class="panel"><div class="empty" style="min-height:180px"><div><h3>لا توجد نتائج</h3><p>جرّب اسمًا أو رقم هاتف أو رقم فاتورة آخر.</p></div></div></div>`}</section>`:''}
       ${!q&&fav.length?`<section class="apps-section"><div class="apps-section-title"><div><h2>المفضلة</h2><p>الأقسام التي تستخدمها أكثر</p></div></div><div class="apps-grid">${fav.map(appTile).join('')}</div></section>`:''}
