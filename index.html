@@ -7,7 +7,7 @@
   <meta name="description" content="ملوك العسل - متجر إلكتروني ونظام إدارة المبيعات والمخزون والمحاسبة" />
   <link rel="icon" href="assets/branding/app-icon-192.png" type="image/png" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <title>ملوك العسل Commerce V7.3.2</title>
+  <title>ملوك العسل Commerce V7.3.3</title>
   <style>
     :root{
       --bg:#07101a;--bg2:#0d1824;--panel:#111e2b;--panel2:#182838;--panel3:#213447;
@@ -472,7 +472,7 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
   const OAUTH_INTENT='kings_honey_oauth_intent_v7';
   const SUPABASE_URL='https://githoiypnqfgcmfopfde.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY='sb_publishable_eNZfKOr73Hnxd_rgXt1jmA_mOdHOWNr';
-  const OAUTH_RETURN_URL='https://armmerou530-beep.github.io/kings-of-honey/';
+  const OAUTH_RETURN_URL=new URL('.',window.location.href).href;
   const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'implicit',storageKey:'kings-honey-supabase-auth-v1'}});
   const storageGet=k=>{try{return localStorage.getItem(k)}catch{return null}};
   const storageSet=(k,v)=>{try{localStorage.setItem(k,v);return true}catch{return false}};
@@ -502,7 +502,7 @@ linear-gradient(180deg,#fffdf8 0,#fbf7ee 48%,#fffdf9 100%);color:var(--store-bro
     {id:'settings',name:'الإعدادات والأمان',desc:'إعدادات النظام والنسخ الاحتياطية',asset:'assets/icons/icon-settings.png',emoji:'⚙️',tabs:['عام','النسخ الاحتياطية','السجل الأمني']}
   ];
   const blankState=()=>({
-    version:7.31,profileImages:{},
+    version:7.33,profileImages:{},
     settings:{shopName:'ملوك العسل',tagline:'نقاء الطبيعة.. جودة الملك',theme:'light',currency:'₺',lowStock:2,followUpDays:20,discountApproval:15,expenseReceiptThreshold:500,refundableFinanceAlertDays:30,accountPassword:'1234',adminGatePassword:'2009314',whatsappNumber:'',storeHeroTitle:'منتجات مختارة بعناية.. وخدمات رقمية تعمل من أي مكان',storeHeroText:'منتجات طبيعية وخدمات رقمية موثوقة في منصة واحدة.',storeEnabled:true,dailyBackup:true,favorites:['dashboard','sales','orders'],recentModules:[]},
     passwords:{admin:'2009314'},
     accounts:{openingCash:0,openingBank:0,closedMonths:[],reconciliations:[],monthlySnapshots:[]},
