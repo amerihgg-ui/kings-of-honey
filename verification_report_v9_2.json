@@ -1,0 +1,13 @@
+{
+  "owner_email_present": true,
+  "temporary_open_admin_disabled": true,
+  "owner_has_admin_and_seller": true,
+  "three_roles_available": true,
+  "missing_assets": [
+    "assets/avatars/avatar-ahmed-elbadrawy.webp",
+    "assets/avatars/avatar-amr-aboughazala.webp",
+    "assets/avatars/avatar-ibrahim-aboulmakarem.webp",
+    "assets/avatars/avatar-mohamed-yousry.webp"
+  ],
+  "asset_reference_count": 43
+}

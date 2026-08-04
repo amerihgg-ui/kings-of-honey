@@ -1,0 +1,11 @@
+{
+  "version": "8.4",
+  "javascript_syntax": "passed",
+  "asset_references": 12,
+  "missing_assets": [],
+  "seller_portal": true,
+  "about_page": true,
+  "email_roles_code_present_but_activation_deferred": true,
+  "old_visible_brand_phrase_found": false,
+  "removed_sentence_found": false
+}

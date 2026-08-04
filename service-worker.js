@@ -1,5 +1,27 @@
-const CACHE='kings-honey-v6-20260723';
-const ASSETS=["./", "./index.html", "./manifest.webmanifest", "./favicon.png", "./assets/avatars/avatar-ahmed-elbadrawy.webp", "./assets/avatars/avatar-amr-aboughazala.webp", "./assets/avatars/avatar-ibrahim-aboulmakarem.webp", "./assets/avatars/avatar-mohamed-yousry.webp", "./assets/backgrounds/invoice-watermark.png", "./assets/backgrounds/login-honey-background.png", "./assets/backgrounds/welcome-honey-background.png", "./assets/branding/app-icon-192.png", "./assets/branding/app-icon-512.png", "./assets/branding/logo-main.png", "./assets/empty-states/empty-chat.webp", "./assets/empty-states/empty-customers.webp", "./assets/empty-states/empty-inventory.webp", "./assets/empty-states/empty-invoices.webp", "./assets/empty-states/empty-notifications.webp", "./assets/empty-states/empty-orders.webp", "./assets/icons/icon-alerts.png", "./assets/icons/icon-customers.png", "./assets/icons/icon-dashboard.png", "./assets/icons/icon-inventory.png", "./assets/icons/icon-invoices.png", "./assets/icons/icon-logout.png", "./assets/icons/icon-payments.png", "./assets/icons/icon-products.png", "./assets/icons/icon-profile.png", "./assets/icons/icon-purchases.png", "./assets/icons/icon-reports.png", "./assets/icons/icon-sales.png", "./assets/icons/icon-settings.png", "./assets/products/category-natural-honey.webp", "./assets/products/clover-honey-main.webp", "./assets/products/product-placeholder-honey.webp"];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const clone=r.clone();caches.open(CACHE).then(c=>c.put(e.request,clone));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))))});
+const CACHE_NAME = 'nuvexa-hub-v9-2';
+const CORE_ASSETS = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './assets/branding/logo-main.png',
+  './assets/branding/app-icon-192.png',
+  './assets/branding/app-icon-512.png',
+  './assets/videos/nuvexa_hub_intro_desktop.mp4',
+  './assets/videos/nuvexa_hub_intro_mobile.mp4'
+];
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS)).catch(() => null));
+  self.skipWaiting();
+});
+self.addEventListener('activate', event => {
+  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+  event.respondWith(fetch(event.request).then(response => {
+    const copy = response.clone();
+    caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy)).catch(() => null);
+    return response;
+  }).catch(() => caches.match(event.request)));
+});
