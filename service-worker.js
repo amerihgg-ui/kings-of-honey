@@ -1,5 +1,5 @@
-const CACHE_NAME='nuvexa-hub-v11-3-cloud-products';
-const CORE=['./manifest.webmanifest?v=11.3','./favicon.ico?v=11.3','./assets/branding/favicon-nuvexa-v10-2-32.png?v=11.3','./assets/branding/favicon-nuvexa-v10-2-48.png?v=11.3','./assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=11.3','./assets/branding/logo-main.png','./assets/branding/app-icon-192.png?v=11.3','./assets/branding/app-icon-512.png?v=11.3'];
+const CACHE_NAME='nuvexa-hub-v11-4-smart-product-copy';
+const CORE=['./manifest.webmanifest?v=11.4','./favicon.ico?v=11.4','./assets/branding/favicon-nuvexa-v10-2-32.png?v=11.4','./assets/branding/favicon-nuvexa-v10-2-48.png?v=11.4','./assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=11.4','./assets/branding/logo-main.png','./assets/branding/app-icon-192.png?v=11.4','./assets/branding/app-icon-512.png?v=11.4'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(CORE)).catch(()=>null));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',event=>{

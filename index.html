@@ -795,6 +795,12 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
 }
 @media(max-width:420px){.page-head>div:last-child,.page-actions,.detail-actions{grid-template-columns:1fr}.dashboard-six,.license-summary-grid,.seller-stat-grid{grid-template-columns:1fr!important}}
 
+
+/* ===== NUVEXA HUB V11.4 — smart product copy assistant ===== */
+.ai-copy-box{grid-column:1/-1;border:1px solid rgba(84,178,255,.22);border-radius:18px;padding:14px;background:linear-gradient(145deg,rgba(22,140,255,.08),rgba(142,92,255,.06));display:grid;gap:12px}
+.ai-copy-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.ai-copy-head strong{color:var(--text)}.ai-copy-head small{display:block;color:var(--muted);margin-top:4px;line-height:1.6}.ai-copy-controls{display:grid;grid-template-columns:minmax(150px,.7fr) minmax(220px,1.3fr) auto;gap:9px}.ai-copy-controls select,.ai-copy-controls input{width:100%;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:11px 12px}.ai-copy-status{min-height:18px;color:var(--muted);font-size:11px}.ai-copy-status.success{color:#62dda3}.ai-copy-status.error{color:#ff8da0}
+@media(max-width:760px){.ai-copy-controls{grid-template-columns:1fr}.ai-copy-controls .btn{width:100%}}
+
 </style>
 </head>
 <body>
@@ -1592,6 +1598,29 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
   function renderSellerProducts(view){let list=sellerOwnSubmissions();if(view==='drafts')list=list.filter(x=>x.status==='مسودة');return `<section class="seller-panel"><div class="seller-panel-head"><div><h2>${view==='drafts'?'المسودات':'منتجاتي'}</h2><p style="margin:5px 0 0;color:#748397">تابع حالة كل منتج وملاحظات الإدارة.</p></div><button class="btn btn-gold" data-action="seller-new">＋ إضافة منتج جديد</button></div><div class="seller-panel-body">${list.length?`<div class="seller-product-list">${list.slice().reverse().map(renderSellerProductRow).join('')}</div>`:`<div class="seller-empty"><div><i>▤</i><h3>لا توجد عناصر هنا</h3><p>المنتجات والمسودات التي تنشئها ستظهر في هذه الصفحة.</p></div></div>`}</div></section>`}
   function renderSellerMessages(){const notes=sellerOwnSubmissions().filter(x=>x.adminNote);return `<section class="seller-panel"><div class="seller-panel-head"><h2>الرسائل والملاحظات</h2></div><div class="seller-panel-body">${notes.length?`<div class="seller-product-list">${notes.slice().reverse().map(x=>`<article class="seller-product-row"><img src="${x.image||'assets/products/product-placeholder.webp'}"><div><h3>${esc(x.name)}</h3><p>${esc(x.adminNote)}</p></div><div></div>${sellerStatusBadge(x.status)}<button class="btn btn-soft btn-sm" data-seller-edit="${x.id}">فتح</button></article>`).join('')}</div>`:`<div class="seller-empty"><div><i>◌</i><h3>لا توجد ملاحظات جديدة</h3><p>ستظهر هنا رسائل الإدارة وطلبات تعديل المنتجات.</p></div></div>`}</div></section>`}
   function renderSellerAccount(){const i=sellerIdentity();return `<section class="seller-panel"><div class="seller-panel-head"><h2>حساب البائع</h2></div><div class="seller-panel-body"><div class="seller-form-grid"><label>الاسم<input value="${esc(i.name)}" disabled></label><label>البريد<input value="${esc(i.email||'سيظهر بعد تفعيل ربط الإيميلات')}" disabled></label><label>الهاتف<input value="${esc(i.phone)}" disabled></label><label>الدور<input value="بائع خارجي" disabled></label></div><div class="submission-cloud-note" style="margin-top:18px"><i>☁</i><div><strong>الربط السحابي مؤجل للمرحلة الأخيرة</strong><p>سيتم ربط الحساب والمنتجات وإشعارات الاعتماد مع Supabase بعد الانتهاء من التصميم النهائي.</p></div></div></div></section>`}
+  function productCopyTokens(value){return String(value||'').split(/[،,\n]+/).map(x=>x.trim()).filter(Boolean)}
+  function generateProductCopy({name,type,tone,audience,size}){
+    const cleanName=String(name||'').trim();if(!cleanName)throw new Error('اكتب اسم المنتج أولًا');
+    const digital=type==='digital',who=String(audience||'العملاء الباحثين عن حل عملي وموثوق').trim(),unit=String(size||'').trim();
+    const toneLead={professional:'حل احترافي',friendly:'اختيار سهل وعملي',premium:'تجربة متطورة بعناية'}[tone]||'حل احترافي';
+    const shortDescription=digital
+      ?`${cleanName} — ${toneLead} يساعد ${who} على إنجاز أعمالهم بكفاءة ووضوح.`
+      :`${cleanName}${unit?` (${unit})`:''} — جودة موثوقة واستخدام عملي يناسب ${who}.`;
+    const description=digital
+      ?`${cleanName} هو ${toneLead} صُمم لتبسيط العمل وتقديم تجربة استخدام واضحة من أول خطوة. يناسب ${who}، ويجمع بين سهولة الاستخدام والتنظيم والمرونة، مع إمكانية الوصول من الأجهزة الحديثة وفق متطلبات الخدمة.\n\nيمكن استخدامه لتقليل الوقت الضائع، تنظيم المهام، وتحسين تجربة العميل أو فريق العمل. يتم عرض تفاصيل التفعيل والتسليم بوضوح قبل إتمام الطلب، مع دعم ومتابعة عند الحاجة.`
+      :`${cleanName}${unit?` بحجم ${unit}`:''} منتج تم اختياره ليقدم توازنًا بين الجودة وسهولة الاستخدام. يناسب ${who}، ويتميز بتجربة شراء واضحة ومعلومات دقيقة عن السعر والتوفر.\n\nيتم تجهيز الطلب بعناية، مع توضيح حالة المخزون وخيارات الاستلام أو التوصيل المتاحة. راجع المواصفات قبل الشراء للتأكد من ملاءمته لاحتياجك.`;
+    const features=digital
+      ?['واجهة واضحة وسهلة الاستخدام','يعمل على الأجهزة والمتصفحات الحديثة','إعداد سريع وخطوات تشغيل منظمة','دعم ومتابعة بعد الشراء','قابل للتوسع حسب احتياج العميل']
+      :['جودة موثوقة للاستخدام اليومي','معلومات واضحة عن السعر والتوفر','تجهيز وتغليف بعناية','سهولة الطلب والمتابعة','دعم مباشر عند الحاجة'];
+    const baseTags=digital?['خدمة رقمية','حلول أعمال','تقنية','أونلاين']:['منتج','جودة','متجر','طلب مباشر'];
+    const nameTags=cleanName.split(/\s+/).filter(x=>x.length>2).slice(0,3);
+    return {shortDescription:shortDescription.slice(0,160),description,specifications:features.join('\n'),tags:[...new Set([...nameTags,...baseTags])].slice(0,8)}
+  }
+  function applyGeneratedProductCopy(){
+    const form=$('#modalDialog form');if(!form)return;
+    const name=form.elements.name?.value,type=form.elements.type?.value||'physical',tone=$('#aiProductTone')?.value||'professional',audience=$('#aiProductAudience')?.value||'',size=form.elements.size?.value||'';
+    const status=$('#aiProductStatus');try{if(status){status.className='ai-copy-status';status.textContent='جارٍ تجهيز النص...'}const copy=generateProductCopy({name,type,tone,audience,size});form.elements.shortDescription.value=copy.shortDescription;form.elements.description.value=copy.description;form.elements.specifications.value=copy.specifications;if(form.elements.tags)form.elements.tags.value=copy.tags.join('، ');if(status){status.className='ai-copy-status success';status.textContent='تم إنشاء الوصف والمميزات والوسوم. راجع النص وعدّله قبل الحفظ.'}toast('تم توليد محتوى المنتج بنجاح')}catch(error){if(status){status.className='ai-copy-status error';status.textContent=error.message||'تعذر إنشاء النص'}toast(error.message||'تعذر إنشاء النص','error')}
+  }
   function sellerDraftDefaults(){const i=sellerIdentity();return {id:'',name:'',type:'physical',category:'',shortDescription:'',description:'',image:'',gallery:[],price:0,commission:15,stock:0,deliveryInfo:'',sellerName:i.name,sellerEmail:i.email,phone:i.phone,whatsapp:i.phone,note:'',status:'مسودة',adminNote:'',createdAt:now(),updatedAt:now()}}
   function openSellerWizard(id=''){sellerView='new';sellerWizardStep=1;sellerEditingId=id;const row=(state.sellerSubmissions||[]).find(x=>x.id===id);sellerDraft=Object.assign(sellerDraftDefaults(),row||{});showSellerPortal('new',sellerPreviewMode||isPlatformAdmin())}
   function captureSellerDraft(){const f=$('#sellerWizardForm');if(!f)return;const fd=new FormData(f);for(const [k,v] of fd.entries()){if(['price','commission','stock'].includes(k))sellerDraft[k]=num(v);else sellerDraft[k]=String(v)} }
@@ -1914,9 +1943,15 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
           <div class="field"><label>آخر تكلفة</label><input name="cost" type="number" step="0.01" min="0" value="${num(product?.cost)}"></div>
           <div class="field"><label>حد المخزون المنخفض</label><input name="reorder" type="number" step="0.01" min="0" value="${product?num(product.reorder):state.settings.lowStock}"></div>
           <div class="field"><label>عدد الأجهزة للخدمة الرقمية</label><select name="deviceLimit"><option value="1" ${num(product?.deviceLimit)!==2?'selected':''}>جهاز واحد</option><option value="2" ${num(product?.deviceLimit)===2?'selected':''}>جهازان</option></select></div>
+          <section class="ai-copy-box">
+            <div class="ai-copy-head"><div><strong>✨ مساعد وصف المنتج</strong><small>اكتب اسم المنتج، واختر الأسلوب، ثم أنشئ وصفًا ومميزات ووسومًا قابلة للتعديل.</small></div><span class="badge b-purple">V11.4</span></div>
+            <div class="ai-copy-controls"><select id="aiProductTone"><option value="professional">احترافي</option><option value="friendly">بسيط وودود</option><option value="premium">فاخر وتسويقي</option></select><input id="aiProductAudience" placeholder="الجمهور المستهدف — مثال: أصحاب المتاجر الصغيرة"><button type="button" class="btn btn-blue" data-ai-generate-product>توليد المحتوى</button></div>
+            <div id="aiProductStatus" class="ai-copy-status">يعمل محليًا الآن دون إرسال بيانات المنتج إلى خدمة خارجية.</div>
+          </section>
           <div class="field wide"><label>وصف مختصر للبطاقة</label><input name="shortDescription" maxlength="160" value="${esc(product?.shortDescription||'')}" placeholder="جملة مختصرة تظهر أسفل اسم المنتج"></div>
           <div class="field wide"><label>الوصف التفصيلي</label><textarea name="description" rows="5" placeholder="اشرح فكرة المنتج أو الموقع وطريقة الاستفادة منه">${esc(product?.description||'')}</textarea></div>
           <div class="field wide"><label>المواصفات والمميزات</label><textarea name="specifications" rows="5" placeholder="اكتب كل ميزة في سطر مستقل">${esc(product?.specifications||'')}</textarea></div>
+          <div class="field wide"><label>الوسوم</label><input name="tags" value="${esc((product?.tags||[]).join('، '))}" placeholder="مثال: متجر، تصميم، خدمة رقمية"><small>افصل بين الوسوم بفاصلة.</small></div>
           <div class="field"><label>المطور / مقدم الخدمة — اختياري</label><input name="developerName" value="${esc(product?.developerName||'')}"></div>
           <div class="field"><label>الإصدار — اختياري</label><input name="versionLabel" value="${esc(product?.versionLabel||'')}" placeholder="مثال: 1.0"></div>
           <div class="field wide"><label>التوافق والمتطلبات — اختياري</label><input name="compatibility" value="${esc(product?.compatibility||'')}" placeholder="مثال: يعمل على الهاتف والكمبيوتر ومتصفح حديث"></div>
@@ -1980,7 +2015,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
       const galleryFiles=[...(form.elements.galleryFiles?.files||[])];
       if(galleryImages.length+galleryFiles.length>6)throw new Error('الحد الأقصى لصور المعاينة هو 6 صور');
       for(const shot of galleryFiles){if(!shot.type.startsWith('image/'))throw new Error('كل ملفات المعاينة يجب أن تكون صورًا');if(shot.size>5*1024*1024)throw new Error('حجم صورة المعاينة الواحدة يجب ألا يتجاوز 5 ميجابايت');galleryImages.push(await optimizedImageDataURL(shot,1400,900,.8))}
-      const data={name:get('name'),type:get('type')||'physical',size:get('size'),sku:get('sku'),price:num(get('price')),cost:num(get('cost')),reorder:num(get('reorder')),image,shortDescription:get('shortDescription'),description:get('description'),specifications:get('specifications'),developerName:get('developerName'),versionLabel:get('versionLabel'),compatibility:get('compatibility'),galleryImages,serviceUrl:get('serviceUrl'),deviceLimit:num(get('deviceLimit'))||1,showInStore:fd.has('showInStore'),allowSiteOrder:fd.has('allowSiteOrder'),allowWhatsApp:fd.has('allowWhatsApp')};
+      const data={name:get('name'),type:get('type')||'physical',size:get('size'),sku:get('sku'),price:num(get('price')),cost:num(get('cost')),reorder:num(get('reorder')),image,shortDescription:get('shortDescription'),description:get('description'),specifications:get('specifications'),tags:productCopyTokens(get('tags')),developerName:get('developerName'),versionLabel:get('versionLabel'),compatibility:get('compatibility'),galleryImages,serviceUrl:get('serviceUrl'),deviceLimit:num(get('deviceLimit'))||1,showInStore:fd.has('showInStore'),allowSiteOrder:fd.has('allowSiteOrder'),allowWhatsApp:fd.has('allowWhatsApp')};
       let productRecord=p;
       if(p)Object.assign(p,data);else{productRecord={id:uid('PRD'),...data,stock:0,unit:'وحدة',archived:false,batches:[],createdAt:now()};state.products.push(productRecord)}
       await saveCloudProduct(productRecord);audit(p?'تعديل منتج':'إضافة منتج',data.name)
@@ -2083,6 +2118,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
     const puEdit=e.target.closest('[data-platform-user-edit]');if(puEdit){openModal('platform-user',puEdit.dataset.platformUserEdit);return}
     const puToggle=e.target.closest('[data-platform-user-toggle]');if(puToggle){togglePlatformUser(puToggle.dataset.platformUserToggle);return}
     const puDelete=e.target.closest('[data-platform-user-delete]');if(puDelete){deletePlatformUser(puDelete.dataset.platformUserDelete);return}
+    const aiProduct=e.target.closest('[data-ai-generate-product]');if(aiProduct){applyGeneratedProductCopy();return}
     const modal=e.target.closest('[data-modal]');if(modal){openModal(modal.dataset.modal,modal.dataset.id||'');return}
     const dismissOffer=e.target.closest('[data-dismiss-store-offer]');if(dismissOffer){storeDismissedOfferId=dismissOffer.dataset.dismissStoreOffer||'';renderStore();return}
     const sf=e.target.closest('[data-store-filter]');if(sf){storeFilter=sf.dataset.storeFilter;$('.store-category-nav')?.classList.remove('open');renderStore();setTimeout(()=>$('#storeProductsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),0);return}
