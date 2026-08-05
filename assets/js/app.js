@@ -20,7 +20,7 @@
       return location.href;
     }catch{return location.href}
   })();
-  const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce',storageKey:'nuvexa-hub-supabase-auth-v11'}});
+  const sb=window.NuvexaAuth?.configure({url:SUPABASE_URL,key:SUPABASE_PUBLISHABLE_KEY,redirectTo:OAUTH_RETURN_URL,storageKey:'nuvexa-hub-supabase-auth-v11'});
   const storageGet=k=>{try{return localStorage.getItem(k)}catch{return null}};
   const storageSet=(k,v)=>{try{localStorage.setItem(k,v);return true}catch{return false}};
   const storageRemove=k=>{try{localStorage.removeItem(k)}catch{}};
@@ -130,34 +130,10 @@
   function resetPlatformAccess(){platformAccess={email:'',role:'customer',roles:[],active:false,display_name:'',permissions:{}};platformAccessError='';platformUsersCache=[];platformUsersLoaded=false;platformUsersLoading=false}
   async function refreshPlatformAccess(){
     const email=normalizeEmail(customerSession?.email),userId=customerSession?.userId;
-    if(!email||customerSession?.provider==='local'||!userId){resetPlatformAccess();renderStoreHeader();return platformAccess}
-    try{
-      const [{data:profile,error:profileError},{data:roleRows,error:rolesError}]=await Promise.all([
-        sb.from('profiles').select('id,email,full_name,status').eq('id',userId).maybeSingle(),
-        sb.from('user_roles').select('role_key,is_active').eq('user_id',userId).eq('is_active',true)
-      ]);
-      if(profileError)throw profileError;if(rolesError)throw rolesError;
-      const roles=new Set((roleRows||[]).map(row=>row.role_key));
-      const isOwner=email===PLATFORM_OWNER_EMAIL;
-      const role=isOwner?'owner':roles.has('partner')?'admin':roles.has('seller')?'seller':'customer';
-      const resolvedRoles=isOwner?['buyer','seller','partner']:[...roles];
-      platformAccess={
-        email,
-        role,
-        roles:resolvedRoles,
-        active:isOwner||profile?.status==='active',
-        display_name:profile?.full_name||customerSession?.name||'',
-        permissions:{all:isOwner||roles.has('partner'),roles:resolvedRoles}
-      };
-      platformAccessError='';
-    }catch(error){
-      platformAccessError=error?.message||'تعذر قراءة صلاحيات الحساب';
-      platformAccess=email===PLATFORM_OWNER_EMAIL
-        ?{email,role:'owner',roles:['buyer','seller','partner'],active:true,display_name:customerSession?.name||'صاحب المنصة',permissions:{all:true,roles:['buyer','seller','partner']}}
-        :{email,role:'customer',roles:['buyer'],active:true,display_name:customerSession?.name||'',permissions:{all:false,roles:['buyer']}};
-      console.warn('Platform access:',platformAccessError);
-    }
-    renderStoreHeader();return platformAccess
+    if(!email||customerSession?.provider==='local'||!userId){resetPlatformAccess();window.NuvexaAuth?.resetAccess();renderStoreHeader();return platformAccess}
+    const resolved=await window.NuvexaAuth.loadAccess({userId,email,name:customerSession?.name});
+    platformAccess={...resolved,roles:[...(resolved.roles||[])]};
+    platformAccessError='';renderStoreHeader();return platformAccess
   }
   let cloudProductsLoaded=false,cloudProductsLoading=false,cloudProductsError='';
   const cloudProductType=value=>value==='digital'?'digital_service':'physical';
@@ -252,51 +228,27 @@
     setTimeout(()=>{if(intent==='checkout'&&storeCart.length)openStoreCheckout();else if(intent==='account')showCustomerAccount()},180);
   }
   async function signInCustomerWithProvider(provider){
-    if(!sb){toast('تعذر تحميل خدمة تسجيل الدخول. أعد تحميل الصفحة.','error');return}
-    pendingCustomerIntent=pendingCustomerIntent||'account';sessionSet(OAUTH_INTENT,pendingCustomerIntent);
-    try{
-      const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:OAUTH_RETURN_URL}});
-      if(error)throw error;
-    }catch(error){sessionRemove(OAUTH_INTENT);toast(error?.message||'تعذر بدء تسجيل الدخول','error')}
+    pendingCustomerIntent=pendingCustomerIntent||'account';
+    try{await window.NuvexaAuth.signIn(provider,{redirectTo:OAUTH_RETURN_URL,intent:pendingCustomerIntent})}
+    catch(error){sessionRemove(OAUTH_INTENT);toast(error?.message||'تعذر بدء تسجيل الدخول','error')}
   }
   async function signOutCustomer(){
-    try{if(sb&&customerSession?.provider!=='local')await sb.auth.signOut({scope:'local'})}catch{}
+    try{if(customerSession?.provider!=='local')await window.NuvexaAuth.signOut()}catch{}
     clearCustomerSession();$('#customerAccountDialog')?.open&&$('#customerAccountDialog').close();toast('تم تسجيل خروج العميل');
   }
   async function initializeCustomerAuth(){
     if(!sb)return;
-    let resumed=false;
-    const applySession=async(session,shouldResume=false)=>{
-      if(!session)return;
-      customerSession=customerFromSupabaseSession(session);
-      storageSet(CUSTOMER_SESSION,JSON.stringify(customerSession));
-      await refreshPlatformAccess();
-      renderStoreHeader();
-      if(shouldResume&&!resumed){resumed=true;resumeOAuthIntent()}
-    };
-    sb.auth.onAuthStateChange((event,session)=>{
-      if(session&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||event==='INITIAL_SESSION')){
-        setTimeout(()=>applySession(session,event==='SIGNED_IN'),0);
-      }
-      if(event==='SIGNED_OUT'&&customerSession?.provider!=='local')clearCustomerSession();
+    window.NuvexaAuth.configure({
+      url:SUPABASE_URL,key:SUPABASE_PUBLISHABLE_KEY,redirectTo:OAUTH_RETURN_URL,storageKey:'nuvexa-hub-supabase-auth-v11',
+      setIntent:intent=>sessionSet(OAUTH_INTENT,intent),
+      onSession:async session=>{customerSession=customerFromSupabaseSession(session);storageSet(CUSTOMER_SESSION,JSON.stringify(customerSession));renderStoreHeader()},
+      onAccess:(resolved,error)=>{platformAccess={...resolved,roles:[...(resolved.roles||[])]};platformAccessError=error?.message||'';renderStoreHeader()},
+      onResume:()=>resumeOAuthIntent(),
+      onNoSession:()=>{resetPlatformAccess();renderStoreHeader()},
+      onSignedOut:()=>{if(customerSession?.provider!=='local')clearCustomerSession()},
+      onError:error=>{console.warn('Supabase auth initialization:',error?.message||error);toast(error?.message||'تعذر إكمال تسجيل الدخول','error');resetPlatformAccess();renderStoreHeader()}
     });
-    try{
-      const url=new URL(location.href),code=url.searchParams.get('code'),oauthError=url.searchParams.get('error_description')||url.searchParams.get('error');
-      if(oauthError)throw new Error(oauthError);
-      if(code){
-        const {data,error}=await sb.auth.exchangeCodeForSession(code);if(error)throw error;
-        ['code','error','error_code','error_description'].forEach(key=>url.searchParams.delete(key));
-        history.replaceState({},document.title,url.pathname+(url.search||'')+(url.hash||''));
-        await applySession(data?.session,true);
-      }else{
-        const {data,error}=await sb.auth.getSession();if(error)throw error;
-        if(data?.session)await applySession(data.session,true);else{resetPlatformAccess();renderStoreHeader()}
-      }
-    }catch(error){
-      console.warn('Supabase auth initialization:',error?.message||error);
-      toast(error?.message||'تعذر إكمال تسجيل الدخول','error');
-      resetPlatformAccess();renderStoreHeader();
-    }
+    await window.NuvexaAuth.initialize();
   }
 
   const syncChannel='BroadcastChannel' in window?new BroadcastChannel('nuvexa_hub_v11_2_sync'):null;

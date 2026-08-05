@@ -1,5 +1,5 @@
-const CACHE_NAME='nuvexa-hub-v11-10-seller-module';
-const CORE=['./assets/css/app.css?v=11.9','./assets/js/app.js?v=11.9','./assets/js/modules/orders.js?v=11.9','./assets/js/modules/products.js?v=11.9','./manifest.webmanifest?v=11.9','./favicon.ico?v=11.9','./assets/branding/favicon-nuvexa-v10-2-32.png?v=11.9','./assets/branding/favicon-nuvexa-v10-2-48.png?v=11.9','./assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=11.9','./assets/branding/logo-main.png','./assets/branding/app-icon-192.png?v=11.9','./assets/branding/app-icon-512.png?v=11.9'];
+const CACHE_NAME='nuvexa-hub-v11-11-auth-module';
+const CORE=['./assets/css/app.css?v=11.11','./assets/js/app.js?v=11.11','./assets/js/modules/auth.js?v=11.11','./assets/js/modules/orders.js?v=11.11','./assets/js/modules/products.js?v=11.11','./assets/js/modules/seller.js?v=11.11','./manifest.webmanifest?v=11.11','./favicon.ico?v=11.11','./assets/branding/favicon-nuvexa-v10-2-32.png?v=11.11','./assets/branding/favicon-nuvexa-v10-2-48.png?v=11.11','./assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=11.11','./assets/branding/logo-main.png','./assets/branding/app-icon-192.png?v=11.11','./assets/branding/app-icon-512.png?v=11.11'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(CORE)).catch(()=>null));self.skipWaiting();});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))));self.clients.claim();});
 self.addEventListener('fetch',event=>{
