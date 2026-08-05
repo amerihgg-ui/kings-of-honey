@@ -38,3 +38,10 @@ Admin dashboard and cloud user-role management.
 - `assets/js/modules/reports.js` owns reports overview, sales report, inventory report, period filters, search, and report presentation.
 - Existing CSV export actions and shared calculations remain in `app.js` during safe migration.
 - Service worker cache upgraded to V11.15.
+
+
+## V11.16 Settings Module
+- `assets/js/modules/settings.js` owns general settings presentation, backup history, and security audit presentation.
+- Cloud email/role management continues to use the existing safe business actions in `app.js` while the UI routing is owned by the settings module.
+- Existing profile image, password, backup import/export, reset, and settings-save actions remain unchanged.
+- Service worker cache upgraded to V11.16.
