@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050b12" />
   <meta name="description" content="NUVEXA HUB - متجر إلكتروني ونظام إدارة المبيعات والمخزون والمحاسبة" />
-  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-32.png?v=10.4" type="image/png" sizes="32x32" />
-  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-48.png?v=10.4" type="image/png" sizes="48x48" />
-  <link rel="shortcut icon" href="favicon.ico?v=10.4" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=10.4" />
-  <link rel="manifest" href="manifest.webmanifest?v=10.4" />
+  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-32.png?v=11.1" type="image/png" sizes="32x32" />
+  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-48.png?v=11.1" type="image/png" sizes="48x48" />
+  <link rel="shortcut icon" href="favicon.ico?v=11.1" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=11.1" />
+  <link rel="manifest" href="manifest.webmanifest?v=11.1" />
   <title>NUVEXA HUB</title>
   <script>
     // Force browsers to discard any favicon cached from the previous brand.
     try{
-      const faviconVersion='10.4';
+      const faviconVersion='11.1';
       if(localStorage.getItem('nuvexa_favicon_version')!==faviconVersion){
         localStorage.setItem('nuvexa_favicon_version',faviconVersion);
         document.querySelectorAll('link[rel*="icon"]').forEach(link=>{
@@ -1043,7 +1043,7 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
       return location.href;
     }catch{return location.href}
   })();
-  const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'implicit',storageKey:'nuvexa-hub-supabase-auth-v10'}});
+  const sb=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false,flowType:'pkce',storageKey:'nuvexa-hub-supabase-auth-v11'}});
   const storageGet=k=>{try{return localStorage.getItem(k)}catch{return null}};
   const storageSet=(k,v)=>{try{localStorage.setItem(k,v);return true}catch{return false}};
   const storageRemove=k=>{try{localStorage.removeItem(k)}catch{}};
@@ -1151,12 +1151,33 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
   const platformRoleBadge=role=>`<span class="platform-role-badge ${esc(role)}">${esc(platformRoleLabel(role))}</span>`;
   function resetPlatformAccess(){platformAccess={email:'',role:'customer',active:false,display_name:'',permissions:{}};platformAccessError='';platformUsersCache=[];platformUsersLoaded=false;platformUsersLoading=false}
   async function refreshPlatformAccess(){
-    const email=normalizeEmail(customerSession?.email);
-    if(!email||customerSession?.provider==='local'||!customerSession?.userId){resetPlatformAccess();renderStoreHeader();return platformAccess}
-    const local=currentPlatformRow(email);
-    if(local){platformAccess={...local,email:normalizeEmail(local.email),permissions:local.permissions||{}};platformAccessError='';renderStoreHeader();return platformAccess}
-    platformAccess={email,role:'customer',active:true,display_name:customerSession?.name||'',permissions:{}};
-    platformAccessError='';renderStoreHeader();return platformAccess
+    const email=normalizeEmail(customerSession?.email),userId=customerSession?.userId;
+    if(!email||customerSession?.provider==='local'||!userId){resetPlatformAccess();renderStoreHeader();return platformAccess}
+    try{
+      const [{data:profile,error:profileError},{data:roleRows,error:rolesError}]=await Promise.all([
+        sb.from('profiles').select('id,email,full_name,status').eq('id',userId).maybeSingle(),
+        sb.from('user_roles').select('role_key,is_active').eq('user_id',userId).eq('is_active',true)
+      ]);
+      if(profileError)throw profileError;if(rolesError)throw rolesError;
+      const roles=new Set((roleRows||[]).map(row=>row.role_key));
+      const isOwner=email===PLATFORM_OWNER_EMAIL;
+      const role=isOwner?'owner':roles.has('partner')?'admin':roles.has('seller')?'seller':'customer';
+      platformAccess={
+        email,
+        role,
+        active:isOwner||profile?.status==='active',
+        display_name:profile?.full_name||customerSession?.name||'',
+        permissions:{all:isOwner||roles.has('partner'),roles:[...roles]}
+      };
+      platformAccessError='';
+    }catch(error){
+      platformAccessError=error?.message||'تعذر قراءة صلاحيات الحساب';
+      platformAccess=email===PLATFORM_OWNER_EMAIL
+        ?{email,role:'owner',active:true,display_name:customerSession?.name||'صاحب المنصة',permissions:{all:true,roles:['buyer','seller','partner']}}
+        :{email,role:'customer',active:true,display_name:customerSession?.name||'',permissions:{}};
+      console.warn('Platform access:',platformAccessError);
+    }
+    renderStoreHeader();return platformAccess
   }
   async function loadPlatformUsers(force=false){
     if(!isPlatformOwner()||platformUsersLoading||(!force&&platformUsersLoaded))return;
@@ -1204,15 +1225,38 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
   }
   async function initializeCustomerAuth(){
     if(!sb)return;
-    try{
-      const {data,error}=await sb.auth.getSession();if(error)throw error;
-      if(data?.session){customerSession=customerFromSupabaseSession(data.session);storageSet(CUSTOMER_SESSION,JSON.stringify(customerSession));await refreshPlatformAccess();resumeOAuthIntent()}
-      else{resetPlatformAccess();renderStoreHeader()}
-    }catch(error){console.warn('Supabase auth initialization:',error?.message||error)}
+    let resumed=false;
+    const applySession=async(session,shouldResume=false)=>{
+      if(!session)return;
+      customerSession=customerFromSupabaseSession(session);
+      storageSet(CUSTOMER_SESSION,JSON.stringify(customerSession));
+      await refreshPlatformAccess();
+      renderStoreHeader();
+      if(shouldResume&&!resumed){resumed=true;resumeOAuthIntent()}
+    };
     sb.auth.onAuthStateChange((event,session)=>{
-      if(session&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||event==='INITIAL_SESSION')){persistCustomerSession(customerFromSupabaseSession(session));if(event==='SIGNED_IN')resumeOAuthIntent()}
+      if(session&&(event==='SIGNED_IN'||event==='TOKEN_REFRESHED'||event==='INITIAL_SESSION')){
+        setTimeout(()=>applySession(session,event==='SIGNED_IN'),0);
+      }
       if(event==='SIGNED_OUT'&&customerSession?.provider!=='local')clearCustomerSession();
     });
+    try{
+      const url=new URL(location.href),code=url.searchParams.get('code'),oauthError=url.searchParams.get('error_description')||url.searchParams.get('error');
+      if(oauthError)throw new Error(oauthError);
+      if(code){
+        const {data,error}=await sb.auth.exchangeCodeForSession(code);if(error)throw error;
+        ['code','error','error_code','error_description'].forEach(key=>url.searchParams.delete(key));
+        history.replaceState({},document.title,url.pathname+(url.search||'')+(url.hash||''));
+        await applySession(data?.session,true);
+      }else{
+        const {data,error}=await sb.auth.getSession();if(error)throw error;
+        if(data?.session)await applySession(data.session,true);else{resetPlatformAccess();renderStoreHeader()}
+      }
+    }catch(error){
+      console.warn('Supabase auth initialization:',error?.message||error);
+      toast(error?.message||'تعذر إكمال تسجيل الدخول','error');
+      resetPlatformAccess();renderStoreHeader();
+    }
   }
 
   const syncChannel='BroadcastChannel' in window?new BroadcastChannel('nuvexa_hub_v10_sync'):null;
