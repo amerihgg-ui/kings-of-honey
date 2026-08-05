@@ -22,3 +22,8 @@ Admin dashboard and cloud user-role management.
 - `assets/js/modules/admin.js` now owns admin application routing, module access checks, sidebar rendering, module selection, and launcher return behavior.
 - `app.js` supplies state-aware renderers and business dependencies through a small admin context object.
 - This keeps page navigation and permission gates isolated from individual business modules.
+
+
+## V11.13 Customers Module
+- `assets/js/modules/customers.js` owns buyers list, search, filters, three views, and follow-up rendering.
+- Existing customer forms, archive action, and local data operations remain in `app.js` during safe migration.
