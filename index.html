@@ -1132,7 +1132,7 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
   let licenseSearch='',licenseStatusFilter='all';
   const PLATFORM_OWNER_EMAIL='amerihgg@gmail.com';
   const TEMP_DESIGN_ADMIN_ACCESS=false;
-  let platformAccess={email:'',role:'customer',active:false,display_name:'',permissions:{}};
+  let platformAccess={email:'',role:'customer',roles:[],active:false,display_name:'',permissions:{}};
   let platformAccessError='';
   let platformUsersCache=[],platformUsersLoaded=false,platformUsersLoading=false;
   const normalizeEmail=value=>String(value||'').trim().toLowerCase();
@@ -1145,11 +1145,12 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
     return state.settings.platformUsersLocal
   };
   const currentPlatformRow=email=>localPlatformUsers().find(x=>normalizeEmail(x.email)===normalizeEmail(email));
-  const isPlatformOwner=()=>platformAccess.active&&platformAccess.role==='owner'&&normalizeEmail(platformAccess.email)===PLATFORM_OWNER_EMAIL;
-  const isPlatformAdmin=()=>platformAccess.active&&['owner','admin'].includes(platformAccess.role)&&customerSession?.provider!=='local'&&!!customerSession?.userId;
-  const isPlatformSeller=()=>platformAccess.active&&['owner','seller'].includes(platformAccess.role)&&customerSession?.provider!=='local'&&!!customerSession?.userId;
+  const hasPlatformRole=role=>platformAccess.active&&Array.isArray(platformAccess.roles)&&platformAccess.roles.includes(role);
+  const isPlatformOwner=()=>platformAccess.active&&normalizeEmail(platformAccess.email)===PLATFORM_OWNER_EMAIL;
+  const isPlatformAdmin=()=>platformAccess.active&&(isPlatformOwner()||hasPlatformRole('partner'))&&customerSession?.provider!=='local'&&!!customerSession?.userId;
+  const isPlatformSeller=()=>platformAccess.active&&(isPlatformOwner()||hasPlatformRole('seller'))&&customerSession?.provider!=='local'&&!!customerSession?.userId;
   const platformRoleBadge=role=>`<span class="platform-role-badge ${esc(role)}">${esc(platformRoleLabel(role))}</span>`;
-  function resetPlatformAccess(){platformAccess={email:'',role:'customer',active:false,display_name:'',permissions:{}};platformAccessError='';platformUsersCache=[];platformUsersLoaded=false;platformUsersLoading=false}
+  function resetPlatformAccess(){platformAccess={email:'',role:'customer',roles:[],active:false,display_name:'',permissions:{}};platformAccessError='';platformUsersCache=[];platformUsersLoaded=false;platformUsersLoading=false}
   async function refreshPlatformAccess(){
     const email=normalizeEmail(customerSession?.email),userId=customerSession?.userId;
     if(!email||customerSession?.provider==='local'||!userId){resetPlatformAccess();renderStoreHeader();return platformAccess}
@@ -1162,19 +1163,21 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
       const roles=new Set((roleRows||[]).map(row=>row.role_key));
       const isOwner=email===PLATFORM_OWNER_EMAIL;
       const role=isOwner?'owner':roles.has('partner')?'admin':roles.has('seller')?'seller':'customer';
+      const resolvedRoles=isOwner?['buyer','seller','partner']:[...roles];
       platformAccess={
         email,
         role,
+        roles:resolvedRoles,
         active:isOwner||profile?.status==='active',
         display_name:profile?.full_name||customerSession?.name||'',
-        permissions:{all:isOwner||roles.has('partner'),roles:[...roles]}
+        permissions:{all:isOwner||roles.has('partner'),roles:resolvedRoles}
       };
       platformAccessError='';
     }catch(error){
       platformAccessError=error?.message||'تعذر قراءة صلاحيات الحساب';
       platformAccess=email===PLATFORM_OWNER_EMAIL
-        ?{email,role:'owner',active:true,display_name:customerSession?.name||'صاحب المنصة',permissions:{all:true,roles:['buyer','seller','partner']}}
-        :{email,role:'customer',active:true,display_name:customerSession?.name||'',permissions:{}};
+        ?{email,role:'owner',roles:['buyer','seller','partner'],active:true,display_name:customerSession?.name||'صاحب المنصة',permissions:{all:true,roles:['buyer','seller','partner']}}
+        :{email,role:'customer',roles:['buyer'],active:true,display_name:customerSession?.name||'',permissions:{all:false,roles:['buyer']}};
       console.warn('Platform access:',platformAccessError);
     }
     renderStoreHeader();return platformAccess
@@ -1259,7 +1262,7 @@ dialog{overscroll-behavior:contain}.modal{width:100%;max-width:780px}.modal-head
     }
   }
 
-  const syncChannel='BroadcastChannel' in window?new BroadcastChannel('nuvexa_hub_v10_sync'):null;
+  const syncChannel='BroadcastChannel' in window?new BroadcastChannel('nuvexa_hub_v11_2_sync'):null;
   const save=()=>{storageSet(STORAGE,JSON.stringify(state));try{syncChannel?.postMessage({type:'sync',at:Date.now()})}catch{}};
   const currentUser=()=>USERS.find(u=>u.id===sessionUser)||null;
   const isApprover=()=>!!currentUser()?.approver;
