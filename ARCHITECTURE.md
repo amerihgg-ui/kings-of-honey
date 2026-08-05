@@ -33,3 +33,8 @@ Admin dashboard and cloud user-role management.
 - `assets/js/modules/licenses.js` owns license overview, devices, subscriptions, products/sites catalog, search, and status filtering.
 - Existing license creation, renewal, device actions, activation, modal forms, and audit operations remain in `app.js` during safe migration.
 - Service worker cache upgraded to V11.14.
+
+## V11.15 Reports Module
+- `assets/js/modules/reports.js` owns reports overview, sales report, inventory report, period filters, search, and report presentation.
+- Existing CSV export actions and shared calculations remain in `app.js` during safe migration.
+- Service worker cache upgraded to V11.15.
