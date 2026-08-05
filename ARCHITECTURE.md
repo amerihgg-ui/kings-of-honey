@@ -17,3 +17,8 @@
 
 ## Next migration
 Admin dashboard and cloud user-role management.
+
+## V11.12 — Admin module
+- `assets/js/modules/admin.js` now owns admin application routing, module access checks, sidebar rendering, module selection, and launcher return behavior.
+- `app.js` supplies state-aware renderers and business dependencies through a small admin context object.
+- This keeps page navigation and permission gates isolated from individual business modules.
