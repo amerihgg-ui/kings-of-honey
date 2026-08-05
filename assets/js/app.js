@@ -546,18 +546,10 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
   const sellerOwnSubmissions=()=>{const email=sellerIdentity().email;return (state.sellerSubmissions||[]).filter(x=>sellerPreviewMode||!email||normalizeEmail(x.sellerEmail)===email)};
   const sellerStatusClass=status=>status==='معتمد ومنشور'?'approved':status==='بانتظار المراجعة'?'pending':status==='يحتاج تعديلًا'?'edit':status==='مرفوض'?'rejected':'draft';
   function sellerStatusBadge(status){return `<span class="seller-status ${sellerStatusClass(status)}">${esc(status||'مسودة')}</span>`}
-  function showSellerPortal(view='dashboard',preview=false){
-    if(!preview&&!isPlatformSeller()){toast('هذه الواجهة متاحة للبائعين المصرح لهم فقط','error');return}
-    sellerPreviewMode=preview||sellerPreviewMode;sellerView=view;
-    $('#sellerPage').classList.remove('hidden');$('#storePage').classList.add('hidden');$('#loginPage').classList.add('hidden');$('#adminGatePage').classList.add('hidden');$('#launcherPage').classList.add('hidden');$('#modulePage').classList.add('hidden');$('#quickFab')?.classList.add('hidden');$('#quickMenu')?.classList.add('hidden');renderSellerPortal();window.scrollTo({top:0,behavior:'smooth'});
-  }
-  function sellerSetView(view){sellerView=view;sellerWizardStep=1;sellerEditingId='';sellerDraft={};renderSellerPortal()}
-  function renderSellerPortal(){
-    const content=$('#sellerContent');if(!content)return;
-    const ident=sellerIdentity();$('#sellerHeaderIdentity').textContent=sellerPreviewMode?'وضع معاينة التصميم':`${ident.name}${ident.email?` — ${ident.email}`:''}`;
-    $$('.seller-sidebar [data-seller-view],.seller-mobile-nav [data-seller-view]').forEach(b=>b.classList.toggle('active',b.dataset.sellerView===sellerView));
-    if(sellerView==='new')content.innerHTML=renderSellerWizard();else if(sellerView==='products'||sellerView==='drafts')content.innerHTML=renderSellerProducts(sellerView);else if(sellerView==='messages')content.innerHTML=renderSellerMessages();else if(sellerView==='account')content.innerHTML=renderSellerAccount();else content.innerHTML=renderSellerDashboard();
-  }
+  function sellerModuleContext(){return {state:()=>state,customerSession:()=>customerSession,platformAccess:()=>platformAccess,normalizeEmail,money,isSeller:isPlatformSeller,toast,renderWizard:renderSellerWizard,resetWizard:()=>{sellerWizardStep=1;sellerEditingId='';sellerDraft={}}}}
+  function showSellerPortal(view='dashboard',preview=false){sellerPreviewMode=preview||sellerPreviewMode;sellerView=view;if(window.NuvexaSeller)return window.NuvexaSeller.show(view,preview,sellerModuleContext());toast('تعذر تحميل موديول البائع','error')}
+  function sellerSetView(view){sellerView=view;if(window.NuvexaSeller)return window.NuvexaSeller.setView(view,sellerModuleContext());sellerWizardStep=1;sellerEditingId='';sellerDraft={};renderSellerPortal()}
+  function renderSellerPortal(){if(window.NuvexaSeller)return window.NuvexaSeller.render(sellerModuleContext());}
   function renderSellerDashboard(){
     const list=sellerOwnSubmissions(),pending=list.filter(x=>x.status==='بانتظار المراجعة').length,approved=list.filter(x=>x.status==='معتمد ومنشور').length,edit=list.filter(x=>x.status==='يحتاج تعديلًا').length,rejected=list.filter(x=>x.status==='مرفوض').length;
     const rows=list.slice().reverse().slice(0,6);
@@ -602,7 +594,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
     const status=$('#aiProductStatus');try{if(status){status.className='ai-copy-status';status.textContent='جارٍ تجهيز النص...'}const copy=generateProductCopy({name,type,tone,audience,size});form.elements.shortDescription.value=copy.shortDescription;form.elements.description.value=copy.description;form.elements.specifications.value=copy.specifications;if(form.elements.tags)form.elements.tags.value=copy.tags.join('، ');if(status){status.className='ai-copy-status success';status.textContent='تم إنشاء الوصف والمميزات والوسوم. راجع النص وعدّله قبل الحفظ.'}toast('تم توليد محتوى المنتج بنجاح')}catch(error){if(status){status.className='ai-copy-status error';status.textContent=error.message||'تعذر إنشاء النص'}toast(error.message||'تعذر إنشاء النص','error')}
   }
   function sellerDraftDefaults(){const i=sellerIdentity();return {id:'',name:'',type:'physical',category:'',shortDescription:'',description:'',image:'',gallery:[],price:0,commission:15,stock:0,deliveryInfo:'',sellerName:i.name,sellerEmail:i.email,phone:i.phone,whatsapp:i.phone,note:'',status:'مسودة',adminNote:'',createdAt:now(),updatedAt:now()}}
-  function openSellerWizard(id=''){sellerView='new';sellerWizardStep=1;sellerEditingId=id;const row=(state.sellerSubmissions||[]).find(x=>x.id===id);sellerDraft=Object.assign(sellerDraftDefaults(),row||{});showSellerPortal('new',sellerPreviewMode||isPlatformAdmin())}
+  function openSellerWizard(id=''){sellerView='new';window.NuvexaSeller?.setWizardView(sellerModuleContext());sellerWizardStep=1;sellerEditingId=id;const row=(state.sellerSubmissions||[]).find(x=>x.id===id);sellerDraft=Object.assign(sellerDraftDefaults(),row||{});showSellerPortal('new',sellerPreviewMode||isPlatformAdmin())}
   function captureSellerDraft(){const f=$('#sellerWizardForm');if(!f)return;const fd=new FormData(f);for(const [k,v] of fd.entries()){if(['price','commission','stock'].includes(k))sellerDraft[k]=num(v);else sellerDraft[k]=String(v)} }
   function sellerStepTitle(){return ['البيانات الأساسية','الصور والمحتوى','السعر والاتفاق','بيانات التواصل','المراجعة والإرسال'][sellerWizardStep-1]}
   function renderSellerWizard(){sellerDraft=Object.assign(sellerDraftDefaults(),sellerDraft||{});const d=sellerDraft;const steps=['البيانات الأساسية','الصور والمحتوى','السعر والاتفاق','بيانات التواصل','المراجعة والإرسال'];const stepper=`<div class="seller-stepper">${steps.map((s,i)=>`<div class="seller-step ${sellerWizardStep===i+1?'active':sellerWizardStep>i+1?'done':''}"><b>${i+1}</b><span>${s}</span></div>`).join('')}</div>`;let fields='';

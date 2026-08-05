@@ -14,3 +14,9 @@
 
 ## Next migration
 Seller portal, then admin dashboard and authentication/roles.
+
+
+## V11.10 Seller portal module
+- `assets/js/modules/seller.js` now owns seller dashboard, products, drafts, messages, account rendering, and seller navigation state.
+- The product submission wizard remains in `app.js` temporarily and is injected into the seller module through a narrow context adapter to avoid breaking existing behavior.
+- Next migration target: authentication and live seller invitation management.
