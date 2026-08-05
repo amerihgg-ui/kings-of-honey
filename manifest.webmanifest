@@ -3,7 +3,7 @@
   "name": "NUVEXA HUB",
   "short_name": "NUVEXA HUB",
   "description": "منصة NUVEXA HUB للمنتجات والخدمات الرقمية والإدارة",
-  "start_url": "./?source=pwa&v=11.5",
+  "start_url": "./?source=pwa&v=11.6",
   "scope": "./",
   "display": "standalone",
   "display_override": [
@@ -16,13 +16,13 @@
   "dir": "rtl",
   "icons": [
     {
-      "src": "assets/branding/app-icon-192.png?v=11.5",
+      "src": "assets/branding/app-icon-192.png?v=11.6",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/branding/app-icon-512.png?v=11.5",
+      "src": "assets/branding/app-icon-512.png?v=11.6",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
