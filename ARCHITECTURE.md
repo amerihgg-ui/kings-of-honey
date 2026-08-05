@@ -27,3 +27,9 @@ Admin dashboard and cloud user-role management.
 ## V11.13 Customers Module
 - `assets/js/modules/customers.js` owns buyers list, search, filters, three views, and follow-up rendering.
 - Existing customer forms, archive action, and local data operations remain in `app.js` during safe migration.
+
+
+## V11.14 Licenses Module
+- `assets/js/modules/licenses.js` owns license overview, devices, subscriptions, products/sites catalog, search, and status filtering.
+- Existing license creation, renewal, device actions, activation, modal forms, and audit operations remain in `app.js` during safe migration.
+- Service worker cache upgraded to V11.14.
