@@ -133,7 +133,39 @@
     platformAccessError='';renderStoreHeader();return platformAccess
   }
   let cloudProductsLoaded=false,cloudProductsLoading=false,cloudProductsError='';
+  const PRODUCT_MEDIA_BUCKET='product-media';
   const cloudProductType=value=>value==='digital'?'digital_service':'physical';
+  const cloudMediaPathFromUrl=url=>{
+    const marker=`/storage/v1/object/public/${PRODUCT_MEDIA_BUCKET}/`;
+    const value=String(url||'');
+    const at=value.indexOf(marker);
+    return at<0?'':decodeURIComponent(value.slice(at+marker.length).split('?')[0]);
+  };
+  const isLocalMediaSource=value=>/^data:image\//i.test(String(value||''))||/^blob:/i.test(String(value||''));
+  const mediaExtension=type=>({
+    'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/webp':'webp','image/gif':'gif','image/avif':'avif'
+  })[String(type||'').toLowerCase()]||'webp';
+  async function uploadProductMediaSource(source,productId,index){
+    if(!source||!isLocalMediaSource(source))return {url:source,path:cloudMediaPathFromUrl(source),uploaded:false};
+    if(!sb||!customerSession?.userId)throw new Error('سجّل الدخول بجوجل أولًا لرفع صور المنتج');
+    const response=await fetch(source);if(!response.ok)throw new Error('تعذر تجهيز صورة المنتج للرفع');
+    const blob=await response.blob();
+    if(!blob.type.startsWith('image/'))throw new Error('ملف الوسائط ليس صورة صالحة');
+    if(blob.size>6*1024*1024)throw new Error('حجم الصورة بعد المعالجة يتجاوز 6 ميجابايت');
+    const random=(globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9-]/g,'');
+    const path=`${customerSession.userId}/${productId}/${String(index).padStart(2,'0')}-${random}.${mediaExtension(blob.type)}`;
+    const {error}=await sb.storage.from(PRODUCT_MEDIA_BUCKET).upload(path,blob,{cacheControl:'31536000',upsert:false,contentType:blob.type});
+    if(error)throw error;
+    const {data}=sb.storage.from(PRODUCT_MEDIA_BUCKET).getPublicUrl(path);
+    if(!data?.publicUrl)throw new Error('تم رفع الصورة لكن تعذر إنشاء رابطها العام');
+    return {url:data.publicUrl,path,uploaded:true};
+  }
+  async function removeProductMediaPaths(paths){
+    const unique=[...new Set((paths||[]).filter(Boolean))];
+    if(!unique.length||!sb)return;
+    const {error}=await sb.storage.from(PRODUCT_MEDIA_BUCKET).remove(unique);
+    if(error)console.warn('Product media cleanup:',error.message||error);
+  }
   const localProductType=value=>value==='digital_service'?'digital':'physical';
   const cloudProductStatusLabel=value=>({draft:'مسودة',pending_review:'بانتظار المراجعة',changes_required:'تحتاج تعديل',approved:'منشور',rejected:'مرفوض',suspended:'موقوف',archived:'مؤرشف'})[value]||value||'مسودة';
   const localProductFromCloud=row=>{
@@ -180,11 +212,22 @@
     let query=existingId?sb.from('products').update(payload).eq('id',existingId):sb.from('products').insert(payload);
     const {data,error}=await query.select('*').single();if(error)throw error;
     item.id=data.id;item.cloudId=data.id;item.cloudStatus=data.status;item.status=cloudProductStatusLabel(data.status);item.archived=data.status==='archived';
-    const imageRows=[];
-    if(item.image)imageRows.push({product_id:data.id,url:item.image,alt_text:item.name,is_primary:true,sort_order:0});
-    (item.galleryImages||[]).forEach((url,index)=>{if(url)imageRows.push({product_id:data.id,url,alt_text:`${item.name} ${index+2}`,is_primary:false,sort_order:index+1})});
-    const del=await sb.from('product_images').delete().eq('product_id',data.id);if(del.error)throw del.error;
-    if(imageRows.length){const ins=await sb.from('product_images').insert(imageRows);if(ins.error)throw ins.error}
+    const previous=await sb.from('product_images').select('url').eq('product_id',data.id);
+    if(previous.error)throw previous.error;
+    const previousPaths=(previous.data||[]).map(row=>cloudMediaPathFromUrl(row.url)).filter(Boolean);
+    const sources=[item.image,...(item.galleryImages||[])].filter(Boolean).slice(0,7);
+    const uploaded=[];
+    try{
+      for(let index=0;index<sources.length;index++)uploaded.push(await uploadProductMediaSource(sources[index],data.id,index));
+      const imageRows=uploaded.map((media,index)=>({product_id:data.id,url:media.url,alt_text:index===0?item.name:`${item.name} ${index+1}`,is_primary:index===0,sort_order:index}));
+      const del=await sb.from('product_images').delete().eq('product_id',data.id);if(del.error)throw del.error;
+      if(imageRows.length){const ins=await sb.from('product_images').insert(imageRows);if(ins.error)throw ins.error}
+      const keepPaths=new Set(uploaded.map(media=>media.path).filter(Boolean));
+      await removeProductMediaPaths(previousPaths.filter(path=>!keepPaths.has(path)));
+    }catch(error){
+      await removeProductMediaPaths(uploaded.filter(media=>media.uploaded).map(media=>media.path));
+      throw error;
+    }
     cloudProductsLoaded=false;await loadCloudProducts(true);return data
   }
   async function archiveCloudProduct(item){
@@ -902,7 +945,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
           <div class="field wide"><label>التوافق والمتطلبات — اختياري</label><input name="compatibility" value="${esc(product?.compatibility||'')}" placeholder="مثال: يعمل على الهاتف والكمبيوتر ومتصفح حديث"></div>
           <div class="field wide"><label>رابط الموقع أو الخدمة الرقمية — لا يظهر قبل الشراء</label><input name="serviceUrl" type="url" value="${esc(product?.serviceUrl||'')}" placeholder="https://..."></div>
           <div class="media-studio">
-            <div class="media-studio-head"><div><h3>مركز الوسائط المحلي</h3><p>جهّز الصورة الرئيسية ومعرض الصور والمعاينة الآن. الرفع إلى Supabase Storage وأدوات الذكاء الاصطناعي السحابية سيتم ربطها في المرحلة الأخيرة.</p></div><span class="badge b-blue">V11.6</span></div>
+            <div class="media-studio-head"><div><h3>مركز وسائط المنتج</h3><p>جهّز الصورة الرئيسية ومعرض الصور؛ عند الحفظ تُرفع الصور تلقائيًا إلى Supabase Storage المجاني ضمن حدود الخطة.</p></div><span class="badge b-blue">V12.2</span></div>
             <div id="mediaDropZone" class="media-drop-zone"><div><strong>اسحب الصور هنا أو اخترها من جهازك</strong><small>الصورة الأولى تصبح رئيسية تلقائيًا — الحد الأقصى 7 صور</small><div style="margin-top:12px"><button type="button" class="btn btn-blue" data-media-pick>اختيار الصور</button></div></div></div>
             <input id="mediaFilesInput" name="mediaFiles" type="file" accept="image/*" multiple hidden>
             <input name="imageFile" type="file" accept="image/*" hidden>
@@ -910,7 +953,7 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
             <div class="ratio-pills"><span class="muted" style="align-self:center">نسبة القص:</span><button type="button" class="active" data-media-ratio="1:1">1:1</button><button type="button" data-media-ratio="4:5">4:5</button><button type="button" data-media-ratio="16:9">16:9</button></div>
             <div class="media-tool-grid"><button type="button" class="media-tool" data-media-local-action="rotate">↻ تدوير<small>يعمل محليًا</small></button><button type="button" class="media-tool disabled" data-media-cloud-action="enhance">✨ تحسين الصورة<small>الربط لاحقًا</small></button><button type="button" class="media-tool disabled" data-media-cloud-action="remove-bg">◌ إزالة الخلفية<small>الربط لاحقًا</small></button><button type="button" class="media-tool disabled" data-media-cloud-action="generate">🎨 توليد صورة<small>الربط لاحقًا</small></button></div>
             <div id="mediaGalleryPreview" class="media-gallery-preview"></div>
-            <div class="media-status-note">الصور في هذه النسخة تُعالج وتُعاين محليًا داخل المتصفح، ولا يتم إرسالها إلى خدمة خارجية.</div>
+            <div class="media-status-note">تُعالج الصور داخل المتصفح أولًا، ثم تُرفع عند الحفظ إلى مساحة المنتج السحابية. أدوات الذكاء الاصطناعي المدفوعة غير مستخدمة.</div>
           </div>
           ${gallery.length?`<div class="field wide"><label>صور المعاينة الحالية</label><div class="play-existing-gallery">${gallery.map((src,index)=>`<label class="play-existing-shot"><img src="${src}" alt="صورة معاينة ${index+1}"><span><input type="checkbox" name="removeGallery" value="${index}"> حذف الصورة</span></label>`).join('')}</div></div>`:''}
           <div class="product-checker">

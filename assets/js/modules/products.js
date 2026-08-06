@@ -29,7 +29,7 @@
   function render(ctx){
     if(ctx.activeTab()==='التراخيص الرقمية')return ctx.renderDigitalLicenses();
     const all=ctx.state.products||[],list=all.filter(matches);
-    const cloudNote=ctx.cloudProductsError()?`<div class="platform-cloud-error">تعذر مزامنة المنتجات: ${esc(ctx.cloudProductsError())}</div>`:`<div class="submission-cloud-note"><i>☁️</i><div><strong>المنتجات مرتبطة بـ Supabase</strong><p>الإضافة والتعديل والأرشفة تُحفظ الآن في قاعدة البيانات السحابية.</p></div></div>`;
+    const cloudNote=ctx.cloudProductsError()?`<div class="platform-cloud-error">تعذر مزامنة المنتجات: ${esc(ctx.cloudProductsError())}</div>`:`<div class="submission-cloud-note"><i>☁️</i><div><strong>المنتجات مرتبطة بـ Supabase</strong><p>الإضافة والتعديل والأرشفة والصور تُحفظ الآن في Supabase وStorage.</p></div></div>`;
     const filters=[['all','الكل',all.filter(p=>!p.archived).length],['physical','المنتجات',all.filter(p=>!p.archived&&p.type!=='digital').length],['digital','الخدمات الرقمية',all.filter(p=>!p.archived&&p.type==='digital').length],['published','المنشورة',all.filter(p=>!p.archived&&p.showInStore!==false).length],['hidden','المخفية',all.filter(p=>!p.archived&&p.showInStore===false).length],['archived','المؤرشفة',all.filter(p=>p.archived).length]];
     const controls=`<div class="products-admin-toolbar"><label class="searchbox"><span>⌕</span><input id="nxProductsSearch" class="input" value="${esc(prefs.search)}" placeholder="ابحث بالاسم أو SKU أو التصنيف..."></label>${viewSwitch()}</div><div class="products-admin-filters">${filters.map(([id,label,count])=>`<button class="${prefs.filter===id?'active':''}" data-nx-products-filter="${id}">${label} <small>${count}</small></button>`).join('')}</div>`;
     let body='';
@@ -48,5 +48,5 @@
     const input=document.querySelector('#nxProductsSearch');
     if(input&&!input.dataset.bound){input.dataset.bound='1';input.addEventListener('input',e=>{prefs.search=e.target.value;ctx.renderModule('products')})}
   }
-  global.NuvexaProducts={version:'11.9',render,handleClick,bind};
+  global.NuvexaProducts={version:'12.2',render,handleClick,bind};
 })(window);
