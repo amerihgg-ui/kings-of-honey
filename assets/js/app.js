@@ -118,7 +118,7 @@
     Object.assign(owner,{email:PLATFORM_OWNER_EMAIL,role:'owner',active:true,protected:true,permissions:{...(owner.permissions||{}),all:true}});
     return state.settings.platformUsersLocal
   };
-  const currentPlatformRow=email=>localPlatformUsers().find(x=>normalizeEmail(x.email)===normalizeEmail(email));
+  const currentPlatformRow=email=>platformUsersCache.find(x=>normalizeEmail(x.email)===normalizeEmail(email))||localPlatformUsers().find(x=>normalizeEmail(x.email)===normalizeEmail(email));
   const hasPlatformRole=role=>platformAccess.active&&Array.isArray(platformAccess.roles)&&platformAccess.roles.includes(role);
   const isPlatformOwner=()=>platformAccess.active&&normalizeEmail(platformAccess.email)===PLATFORM_OWNER_EMAIL;
   const isPlatformAdmin=()=>platformAccess.active&&(isPlatformOwner()||hasPlatformRole('partner'))&&customerSession?.provider!=='local'&&!!customerSession?.userId;
@@ -194,22 +194,30 @@
   }
   async function loadPlatformUsers(force=false){
     if(!isPlatformOwner()||platformUsersLoading||(!force&&platformUsersLoaded))return;
-    platformUsersLoading=true;
-    try{platformUsersCache=localPlatformUsers().map(x=>({...x,email:normalizeEmail(x.email)}));platformUsersLoaded=true;platformAccessError=''}
-    finally{platformUsersLoading=false;if(activeModule==='settings'&&activeTab==='المستخدمون والصلاحيات')renderModule('settings')}
+    platformUsersLoading=true;platformAccessError='';
+    try{
+      if(!sb)throw new Error('تعذر الاتصال بـ Supabase');
+      const {data,error}=await sb.rpc('list_platform_users');if(error)throw error;
+      platformUsersCache=(data||[]).map(x=>({...x,email:normalizeEmail(x.email),display_name:x.display_name||'',protected:!!x.protected,claimed:x.claimed!==false}));
+      platformUsersLoaded=true;
+    }catch(error){
+      platformAccessError=error?.message||'تعذر تحميل المستخدمين السحابيين';
+      platformUsersCache=localPlatformUsers().map(x=>({...x,email:normalizeEmail(x.email),claimed:true}));
+      platformUsersLoaded=true;
+    }finally{platformUsersLoading=false;if(activeModule==='settings'&&activeTab==='المستخدمون والصلاحيات')renderModule('settings')}
   }
   async function togglePlatformUser(email){
     if(!isPlatformOwner())return toast('هذا الإجراء متاح لصاحب المنصة فقط','error');
-    const row=currentPlatformRow(email);if(!row)return;
+    const row=platformUsersCache.find(x=>normalizeEmail(x.email)===normalizeEmail(email));if(!row)return;
     if(row.protected||normalizeEmail(row.email)===PLATFORM_OWNER_EMAIL)return toast('بريد المالك الأساسي محمي ولا يمكن إيقافه','error');
-    row.active=!row.active;row.updated_at=now();save();platformUsersLoaded=false;await loadPlatformUsers(true);toast(row.active?'تم تفعيل البريد':'تم إيقاف البريد')
+    try{const {error}=await sb.rpc('set_platform_user_active',{p_email:normalizeEmail(row.email),p_active:!row.active});if(error)throw error;platformUsersLoaded=false;await loadPlatformUsers(true);toast(!row.active?'تم تفعيل البريد':'تم إيقاف البريد')}catch(error){toast(error?.message||'تعذر تحديث الحساب','error')}
   }
   async function deletePlatformUser(email){
     if(!isPlatformOwner())return toast('هذا الإجراء متاح لصاحب المنصة فقط','error');
-    const row=currentPlatformRow(email);if(!row)return;
+    const row=platformUsersCache.find(x=>normalizeEmail(x.email)===normalizeEmail(email));if(!row)return;
     if(row.protected||normalizeEmail(row.email)===PLATFORM_OWNER_EMAIL)return toast('لا يمكن حذف بريد صاحب المنصة الأساسي','error');
-    if(!confirm(`حذف صلاحية ${row.email}؟`))return;
-    state.settings.platformUsersLocal=localPlatformUsers().filter(x=>normalizeEmail(x.email)!==normalizeEmail(row.email));save();platformUsersLoaded=false;await loadPlatformUsers(true);toast('تم حذف البريد من الصلاحيات')
+    if(!confirm(`حذف صلاحيات ${row.email}؟`))return;
+    try{const {error}=await sb.rpc('remove_platform_user_access',{p_email:normalizeEmail(row.email)});if(error)throw error;platformUsersLoaded=false;await loadPlatformUsers(true);toast('تم حذف صلاحيات البريد')}catch(error){toast(error?.message||'تعذر حذف الصلاحيات','error')}
   }
   function customerProviderLabel(provider){return({google:'Google',facebook:'Facebook',local:'رقم الهاتف'})[provider]||'الحساب'}
   function customerFromSupabaseSession(session){
@@ -768,8 +776,8 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
   function renderPlatformUsersSettings(){
     if(!isPlatformOwner())return `${pageHead('المستخدمون والصلاحيات','إدارة الإيميلات متاحة لصاحب المنصة فقط.')}<section class="panel"><div class="panel-body">${empty('assets/empty-states/empty-notifications.webp','صلاحية غير متاحة','يمكن للشريك دخول لوحة الإدارة، لكن إضافة الإيميلات أو حذفها متاحة لصاحب المنصة فقط.')}</div></section>`;
     if(!platformUsersLoaded&&!platformUsersLoading)setTimeout(()=>loadPlatformUsers(),0);
-    const rows=platformUsersCache.length?platformUsersCache.map(row=>`<tr><td><strong>${esc(row.display_name||'بدون اسم')}</strong>${row.protected?'<div class="muted">البريد الأساسي المحمي</div>':''}</td><td><span class="platform-user-email">${esc(row.email)}</span></td><td>${platformRoleBadge(row.role)}</td><td>${statusBadge(row.active?'فعال':'موقوف')}</td><td>${fmtDate(row.created_at)}</td><td><div class="platform-user-actions"><button class="btn btn-soft btn-sm" data-platform-user-edit="${esc(row.email)}" ${row.protected?'disabled':''}>تعديل</button><button class="btn ${row.active?'btn-danger':'btn-success'} btn-sm" data-platform-user-toggle="${esc(row.email)}" ${row.protected?'disabled':''}>${row.active?'إيقاف':'تفعيل'}</button><button class="btn btn-danger btn-sm" data-platform-user-delete="${esc(row.email)}" ${row.protected?'disabled':''}>حذف</button></div></td></tr>`).join(''):`<tr><td colspan="6" class="muted" style="text-align:center;padding:28px">${platformUsersLoading?'جارٍ تحميل الإيميلات...':'لا توجد إيميلات مضافة.'}</td></tr>`;
-    return `${pageHead('المستخدمون والصلاحيات','إدارة أدوار الحسابات في نسخة التجربة الحالية. سيتم نقل نفس البيانات إلى Supabase عند الربط النهائي.',`<button class="btn btn-gold" data-modal="platform-user">＋ إضافة بريد ودور</button><button class="btn btn-soft" data-platform-users-refresh>تحديث القائمة</button>`)}${platformAccessError?`<div class="platform-cloud-error"><strong>تعذر الاتصال بجدول الصلاحيات:</strong> ${esc(platformAccessError)}</div>`:''}<div class="platform-access-status"><i>☁</i><div><strong>الأدوار مرتبطة ببريد تسجيل Google</strong><p>المالك الأساسي: ${esc(PLATFORM_OWNER_EMAIL)}. يرى المتجر ولوحة البائع ولوحة الإدارة كاملة، ولا يمكن حذفه أو إيقافه.</p></div></div><section class="panel"><div class="panel-head"><h3>إيميلات وأدوار المنصة</h3><span class="badge b-blue">${platformUsersCache.length}</span></div><div class="panel-body"><div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>تاريخ الإضافة</th><th>إجراء</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`
+    const rows=platformUsersCache.length?platformUsersCache.map(row=>`<tr><td><strong>${esc(row.display_name||'بدون اسم')}</strong>${row.protected?'<div class="muted">البريد الأساسي المحمي</div>':''}</td><td><span class="platform-user-email">${esc(row.email)}</span></td><td>${platformRoleBadge(row.role)}</td><td>${statusBadge(row.active?'فعال':'موقوف')}</td><td>${row.claimed===false?'<span class="badge b-gold">بانتظار أول دخول</span>':'<span class="badge b-green">مرتبط</span>'}</td><td>${fmtDate(row.created_at)}</td><td><div class="platform-user-actions"><button class="btn btn-soft btn-sm" data-platform-user-edit="${esc(row.email)}" ${row.protected?'disabled':''}>تعديل</button><button class="btn ${row.active?'btn-danger':'btn-success'} btn-sm" data-platform-user-toggle="${esc(row.email)}" ${row.protected?'disabled':''}>${row.active?'إيقاف':'تفعيل'}</button><button class="btn btn-danger btn-sm" data-platform-user-delete="${esc(row.email)}" ${row.protected?'disabled':''}>حذف</button></div></td></tr>`).join(''):`<tr><td colspan="7" class="muted" style="text-align:center;padding:28px">${platformUsersLoading?'جارٍ تحميل الإيميلات...':'لا توجد إيميلات مضافة.'}</td></tr>`;
+    return `${pageHead('المستخدمون والصلاحيات','إدارة أدوار الحسابات مباشرة في Supabase، بما في ذلك الدعوات قبل أول تسجيل دخول.',`<button class="btn btn-gold" data-modal="platform-user">＋ إضافة بريد ودور</button><button class="btn btn-soft" data-platform-users-refresh>تحديث القائمة</button>`)}${platformAccessError?`<div class="platform-cloud-error"><strong>تعذر الاتصال بجدول الصلاحيات:</strong> ${esc(platformAccessError)}</div>`:''}<div class="platform-access-status"><i>☁</i><div><strong>الأدوار مرتبطة ببريد تسجيل Google</strong><p>المالك الأساسي: ${esc(PLATFORM_OWNER_EMAIL)}. يرى المتجر ولوحة البائع ولوحة الإدارة كاملة، ولا يمكن حذفه أو إيقافه.</p></div></div><section class="panel"><div class="panel-head"><h3>إيميلات وأدوار المنصة</h3><span class="badge b-blue">${platformUsersCache.length}</span></div><div class="panel-body"><div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>البريد</th><th>الدور</th><th>الحالة</th><th>الربط</th><th>تاريخ الإضافة</th><th>إجراء</th></tr></thead><tbody>${rows}</tbody></table></div></div></section>`
   }
   function renderUsersSettings(){return `${pageHead('أمان لوحة التحكم','الدخول موحّد بكلمة مرور واحدة قابلة للتغيير من الإعدادات.')}<section class="panel"><div class="panel-body"><p class="muted" style="line-height:1.9">لا توجد قائمة أسماء للمستخدمين. يتم فتح لوحة التحكم من خلال كلمة مرور الإدارة، ويمكن تغييرها من تبويب الإعدادات العامة.</p></div></section>`}
   function renderBackups(){return `${pageHead('النسخ الاحتياطية','نسخ يومية محلية وتصدير واستعادة يدوي.',`<button class="btn btn-gold" data-action="export-backup">تنزيل نسخة JSON</button><label class="btn btn-soft">استعادة نسخة<input id="importBackup" type="file" accept="application/json" hidden></label>${isApprover()?`<button class="btn btn-danger" data-action="reset-data">مسح كل البيانات</button>`:''}`)}<section class="panel"><div class="panel-body">${state.backups.length?`<div class="table-wrap"><table class="table"><thead><tr><th>التاريخ</th><th>النوع</th></tr></thead><tbody>${state.backups.map(b=>`<tr><td>${new Date(b.date).toLocaleString('ar-EG')}</td><td>${esc(b.type)}</td></tr>`).join('')}</tbody></table></div>`:empty('assets/empty-states/empty-notifications.webp','لا توجد نسخ محلية بعد','تُنشأ النسخة اليومية عند فتح النظام في يوم جديد.')}</div></section>`}
@@ -946,9 +954,10 @@ function saveStoreCart(){storageSet(STORE_CART,JSON.stringify(storeCart));render
       if(!email||!email.includes('@'))throw new Error('اكتب بريدًا إلكترونيًا صحيحًا');
       const existing=currentPlatformRow(email);
       if(existing?.protected||email===PLATFORM_OWNER_EMAIL)throw new Error('بريد المالك الأساسي محمي');
-      const payload={email,display_name,role,active,protected:false,permissions:{},added_by:PLATFORM_OWNER_EMAIL,updated_at:now(),created_at:existing?.created_at||now()};
-      if(existing)Object.assign(existing,payload);else localPlatformUsers().push(payload);
-      save();platformUsersLoaded=false;await loadPlatformUsers(true);toast(existing?'تم تحديث الدور':'تمت إضافة البريد والدور');$('#modalDialog').close();return
+      const cloudRole=role==='admin'?'partner':role==='seller'?'seller':'buyer';
+      if(!sb)throw new Error('تعذر الاتصال بـ Supabase');
+      const {error}=await sb.rpc('upsert_platform_user_access',{p_email:email,p_display_name:display_name,p_role:cloudRole,p_active:active});if(error)throw error;
+      platformUsersLoaded=false;await loadPlatformUsers(true);toast(existing?'تم تحديث الدور سحابيًا':'تمت إضافة البريد، وسيأخذ دوره عند أول تسجيل دخول');$('#modalDialog').close();return
     }
     if(modalType==='license-product'){
       const p=(state.licenseProducts||[]).find(x=>x.id===modalId),data={name:String(get('name')||'').trim(),code:String(get('code')||'').trim()||`LP-${licenseRandom(6)}`,siteUrl:String(get('siteUrl')||'').trim(),defaultSubscriptionType:get('defaultSubscriptionType')||'سنوي',defaultDurationDays:Math.max(0,num(get('defaultDurationDays'))),defaultDeviceLimit:Math.max(1,num(get('defaultDeviceLimit'))||1),active:get('active')!=='0',description:get('description')||'',updatedAt:now()};if(!data.name)throw new Error('أدخل اسم المنتج أو الموقع');if(p)Object.assign(p,data);else{state.licenseProducts=state.licenseProducts||[];state.licenseProducts.unshift({id:uid('LPR'),...data,createdAt:now()})}audit(p?'تعديل منتج تراخيص':'إضافة منتج تراخيص',data.name)

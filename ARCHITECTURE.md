@@ -46,13 +46,21 @@ Admin dashboard and cloud user-role management.
 - Existing profile image, password, backup import/export, reset, and settings-save actions remain unchanged.
 - Service worker cache upgraded to V11.16.
 
-## V12.0 — Core Engine
+## V12.1 — Core Engine
 - Added `assets/js/core.js` as the shared runtime foundation.
 - Centralized DOM helpers, HTML escaping, number/date/money formatting, ID generation, storage, session storage, event bus, lightweight state store, logging, and a safe Supabase API facade.
 - `app.js` now consumes Core utilities instead of redefining its own low-level helpers.
 - Added runtime diagnostics through `window.NuvexaRuntime` and lifecycle events: `core:ready`, `runtime:ready`, `state:saved`, and `state:changed`.
-- Updated service worker cache and all module asset versions to V12.0.
+- Updated service worker cache and all module asset versions to V12.1.
 - No visual design, authentication behavior, database schema, or existing module functionality was changed.
 
 ## Next phase
 Connect each module to live Supabase data through the shared Core/API layer, starting with cloud seller/partner invitations and product media storage.
+
+
+## V12.1 — Cloud User & Roles Manager
+- Added pending email invitations in Supabase before first Google sign-in.
+- Seller/partner roles are applied automatically by the auth trigger on first sign-in.
+- Admin UI now creates, activates, suspends, and removes access through secure RPC functions.
+- Owner account remains protected.
+- Includes `supabase_v12_1_user_roles_manager.sql`; run it once before using the manager.
