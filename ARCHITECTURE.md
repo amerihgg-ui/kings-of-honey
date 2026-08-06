@@ -45,3 +45,14 @@ Admin dashboard and cloud user-role management.
 - Cloud email/role management continues to use the existing safe business actions in `app.js` while the UI routing is owned by the settings module.
 - Existing profile image, password, backup import/export, reset, and settings-save actions remain unchanged.
 - Service worker cache upgraded to V11.16.
+
+## V12.0 — Core Engine
+- Added `assets/js/core.js` as the shared runtime foundation.
+- Centralized DOM helpers, HTML escaping, number/date/money formatting, ID generation, storage, session storage, event bus, lightweight state store, logging, and a safe Supabase API facade.
+- `app.js` now consumes Core utilities instead of redefining its own low-level helpers.
+- Added runtime diagnostics through `window.NuvexaRuntime` and lifecycle events: `core:ready`, `runtime:ready`, `state:saved`, and `state:changed`.
+- Updated service worker cache and all module asset versions to V12.0.
+- No visual design, authentication behavior, database schema, or existing module functionality was changed.
+
+## Next phase
+Connect each module to live Supabase data through the shared Core/API layer, starting with cloud seller/partner invitations and product media storage.
