@@ -1,26 +1,26 @@
-const CACHE_NAME='nuvexa-hub-v12-4-release-candidate';
+const CACHE_NAME='nuvexa-hub-v12-9-final-workflow';
 const CORE=[
   './index.html',
-  './assets/css/app.css?v=12.4',
-  './assets/js/core.js?v=12.4',
-  './assets/js/app.js?v=12.4',
-  './assets/js/modules/auth.js?v=12.4',
-  './assets/js/modules/admin.js?v=12.4',
-  './assets/js/modules/customers.js?v=12.4',
-  './assets/js/modules/licenses.js?v=12.4',
-  './assets/js/modules/reports.js?v=12.4',
-  './assets/js/modules/settings.js?v=12.4',
-  './assets/js/modules/orders.js?v=12.4',
-  './assets/js/modules/products.js?v=12.4',
-  './assets/js/modules/seller.js?v=12.4',
-  './manifest.webmanifest?v=12.4',
-  './favicon.ico?v=12.4',
-  './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.4',
-  './assets/branding/favicon-nuvexa-v10-2-48.png?v=12.4',
-  './assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=12.4',
+  './assets/css/app.css?v=12.9',
+  './assets/js/core.js?v=12.9',
+  './assets/js/app.js?v=12.9',
+  './assets/js/modules/auth.js?v=12.9',
+  './assets/js/modules/admin.js?v=12.9',
+  './assets/js/modules/customers.js?v=12.9',
+  './assets/js/modules/licenses.js?v=12.9',
+  './assets/js/modules/reports.js?v=12.9',
+  './assets/js/modules/settings.js?v=12.9',
+  './assets/js/modules/orders.js?v=12.9',
+  './assets/js/modules/products.js?v=12.9',
+  './assets/js/modules/seller.js?v=12.9',
+  './manifest.webmanifest?v=12.9',
+  './favicon.ico?v=12.9',
+  './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9',
+  './assets/branding/favicon-nuvexa-v10-2-48.png?v=12.9',
+  './assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=12.9',
   './assets/branding/logo-main.png',
-  './assets/branding/app-icon-192.png?v=12.4',
-  './assets/branding/app-icon-512.png?v=12.4'
+  './assets/branding/app-icon-192.png?v=12.9',
+  './assets/branding/app-icon-512.png?v=12.9'
 ];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(CORE)));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))));self.clients.claim()});

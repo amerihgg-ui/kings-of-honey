@@ -5,11 +5,23 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050b12" />
   <meta name="description" content="NUVEXA HUB - متجر إلكتروني ونظام إدارة المبيعات والمخزون والمحاسبة" />
-  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-32.png?v=12.4" type="image/png" sizes="32x32" />
-  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-48.png?v=12.4" type="image/png" sizes="48x48" />
-  <link rel="shortcut icon" href="favicon.ico?v=12.4" type="image/x-icon" />
-  <link rel="apple-touch-icon" href="assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=12.4" />
-  <link rel="manifest" href="manifest.webmanifest?v=12.4" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="NUVEXA HUB" />
+  <meta property="og:title" content="NUVEXA HUB" />
+  <meta property="og:description" content="منصة للتجارة والخدمات الرقمية وتطوير المواقع والأنظمة." />
+  <meta property="og:url" content="https://amerihgg-ui.github.io/kings-of-honey/" />
+  <meta property="og:image" content="https://amerihgg-ui.github.io/kings-of-honey/assets/branding/app-icon-512.png?v=12.9" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="NUVEXA HUB" />
+  <meta name="twitter:description" content="منصة للتجارة والخدمات الرقمية وتطوير المواقع والأنظمة." />
+  <meta name="twitter:image" content="https://amerihgg-ui.github.io/kings-of-honey/assets/branding/app-icon-512.png?v=12.9" />
+  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9" type="image/png" sizes="32x32" />
+  <link rel="icon" href="assets/branding/favicon-nuvexa-v10-2-48.png?v=12.9" type="image/png" sizes="48x48" />
+  <link rel="shortcut icon" href="favicon.ico?v=12.9" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="assets/branding/apple-touch-icon-nuvexa-v10-2.png?v=12.9" />
+  <link rel="manifest" href="manifest.webmanifest?v=12.9" />
   <title>NUVEXA HUB</title>
   <script>
     // Force browsers to discard any favicon cached from the previous brand.
@@ -40,7 +52,7 @@
       });
     })();
   </script>
-  <link rel="stylesheet" href="assets/css/app.css?v=12.4" />
+  <link rel="stylesheet" href="assets/css/app.css?v=12.9" />
 
 </head>
 <body>
@@ -54,6 +66,7 @@
       <video id="nuvexaSplashMobile" class="splash-video splash-video-mobile" autoplay muted playsinline preload="auto" poster="assets/branding/logo-main.png" disablepictureinpicture>
         <source src="assets/videos/nuvexa_hub_intro_mobile.mp4" type="video/mp4" />
       </video>
+      <button id="nuvexaIntroSkip" class="splash-skip" type="button" aria-label="تخطي الفيديو الافتتاحي">تخطي</button>
     </div>
   </section>
 <section id="storePage" class="store-page hidden">
@@ -164,9 +177,10 @@
       <div class="store-dialog-head"><h3>استكمال بيانات الطلب</h3><button data-action="close-customer-phone" aria-label="إغلاق">✕</button></div>
       <div class="customer-phone-body">
         <div class="customer-phone-icon">☎</div>
-        <h2>أضف رقم الهاتف</h2>
-        <p>نحتاجه لتأكيد الطلب والتواصل بشأن التوصيل. سيُحفظ في حسابك على هذا الجهاز.</p>
+        <h2>استكمل بياناتك مرة واحدة</h2>
+        <p>نحتاج الاسم ورقم الهاتف لأول طلب فقط. بعد الحفظ يرتبطان بحساب Google ويظهران تلقائيًا على أي جهاز.</p>
         <form id="customerPhoneForm">
+          <div class="field" style="text-align:right"><label>الاسم</label><input id="customerNameInput" name="name" autocomplete="name" placeholder="الاسم الذي سيظهر في الطلب" required /></div>
           <div class="field" style="text-align:right"><label>رقم الهاتف</label><input id="customerPhoneInput" name="phone" inputmode="tel" autocomplete="tel" placeholder="مثال: +90 5XX XXX XX XX" required /></div>
           <button class="btn btn-gold" style="width:100%;height:49px;margin-top:13px">حفظ ومتابعة</button>
         </form>
@@ -266,16 +280,16 @@
   <section id="printArea" class="print-area"></section>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/core.js?v=12.4" defer></script>
-<script src="assets/js/modules/orders.js?v=12.4" defer></script>
-<script src="assets/js/modules/products.js?v=12.4" defer></script>
-<script src="assets/js/modules/seller.js?v=12.4" defer></script>
-<script src="assets/js/modules/auth.js?v=12.4" defer></script>
-<script src="assets/js/modules/admin.js?v=12.4" defer></script>
-<script src="assets/js/modules/customers.js?v=12.4" defer></script>
-<script src="assets/js/modules/licenses.js?v=12.4" defer></script>
-<script src="assets/js/modules/reports.js?v=12.4" defer></script>
-<script src="assets/js/modules/settings.js?v=12.4" defer></script>
-<script src="assets/js/app.js?v=12.4" defer></script>
+<script src="assets/js/core.js?v=12.9" defer></script>
+<script src="assets/js/modules/orders.js?v=12.9" defer></script>
+<script src="assets/js/modules/products.js?v=12.9" defer></script>
+<script src="assets/js/modules/seller.js?v=12.9" defer></script>
+<script src="assets/js/modules/auth.js?v=12.9" defer></script>
+<script src="assets/js/modules/admin.js?v=12.9" defer></script>
+<script src="assets/js/modules/customers.js?v=12.9" defer></script>
+<script src="assets/js/modules/licenses.js?v=12.9" defer></script>
+<script src="assets/js/modules/reports.js?v=12.9" defer></script>
+<script src="assets/js/modules/settings.js?v=12.9" defer></script>
+<script src="assets/js/app.js?v=12.9" defer></script>
 </body>
 </html>
