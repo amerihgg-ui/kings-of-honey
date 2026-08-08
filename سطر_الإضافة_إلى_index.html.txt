@@ -1,0 +1,2 @@
+<!-- أضف هذا السطر قبل assets/js/app.js مباشرة -->
+<script src="assets/js/modules/reviews.js?v=13.0" defer></script>

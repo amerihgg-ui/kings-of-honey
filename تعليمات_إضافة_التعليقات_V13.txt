@@ -1,0 +1,32 @@
+NUVEXA HUB — إضافة التعليقات والتقييمات فقط (V13.0)
+
+1) ارفع الملف:
+   assets/js/modules/reviews.js
+   داخل نفس المسار في GitHub.
+
+2) افتح index.html وأضف السطر التالي قبل سطر app.js مباشرة:
+   <script src="assets/js/modules/reviews.js?v=13.0" defer></script>
+
+   ليصبح آخر الجزء هكذا:
+   <script src="assets/js/modules/settings.js?v=12.9" defer></script>
+   <script src="assets/js/modules/reviews.js?v=13.0" defer></script>
+   <script src="assets/js/app.js?v=12.9" defer></script>
+
+3) افتح Supabase:
+   SQL Editor -> New query
+   ثم شغّل ملف:
+   RUN_ONCE_PRODUCT_REVIEWS_V13.sql
+   مرة واحدة فقط.
+
+4) اعمل Ctrl + F5 للموقع.
+
+النتيجة:
+- يظهر قسم «التعليقات والتقييمات» أسفل تفاصيل كل منتج.
+- القراءة متاحة للعلن دون تسجيل.
+- التقييم من 1 إلى 5 نجوم.
+- العميل لا يستطيع التقييم إلا بعد شراء المنتج ووصول الطلب إلى «تم التسليم».
+- تقييم واحد لكل عميل/منتج، ويمكن للعميل تعديله.
+- يظهر «مشتري موثّق».
+- يظهر متوسط التقييم وعدد التقييمات.
+- الشريك/الإدارة يستطيع حذف التعليق من نفس قسم المنتج.
+- لا يوجد أي تعديل على تسجيل Google أو إعدادات OAuth أو المنتجات أو الطلبات نفسها.
