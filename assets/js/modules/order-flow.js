@@ -1,4 +1,4 @@
-/* NUVEXA HUB V13.2 — Order Persistence + Live History Sync
+/* NUVEXA HUB V13.3 — Order Persistence + Accounting Sync
    Scope ONLY:
    1) Save BOTH platform and WhatsApp checkout to Supabase BEFORE success/WhatsApp.
    2) Keep buyer profile updated without duplicate cloud buyer records.
@@ -9,7 +9,7 @@
 */
 (()=>{'use strict';
 
-  const VERSION='13.2';
+  const VERSION='13.3';
   const STATE_KEY='nuvexa_hub_enterprise_v10';
   const CUSTOMER_KEY='nuvexa_hub_customer_session_v10';
   const CART_KEY='nuvexa_hub_store_cart_v10';
@@ -118,6 +118,8 @@
       quantity:Number(item.quantity)||0,
       price:Number(item.unit_price)||0,
       unitPrice:Number(item.unit_price)||0,
+      unitCost:Number(item.unit_cost)||0,
+      cogsTotal:Number(item.cogs_total)||0,
       total:Number(item.line_total)||0,
       lineTotal:Number(item.line_total)||0
     }));
@@ -136,6 +138,7 @@
       createdAt:row.created_at,
       updatedAt:row.updated_at||row.created_at,
       currency:row.currency||'TRY',
+      paymentMethod:row.payment_method||'cash',
       subtotal:Number(row.subtotal)||0,
       discount:Number(row.discount_total)||0,
       discountTotal:Number(row.discount_total)||0,
@@ -152,14 +155,21 @@
     };
   }
 
-  function mapInvoice(row){
+  function mapInvoice(row,order){
     const number=`INV-${row.invoice_number}`;
+    const amountPaid=Number(row.amount_paid)||0;
+    const delivered=order?.cloudStatus==='completed';
+    const reversed=['cancelled','refunded'].includes(order?.cloudStatus);
+    const recognized=delivered&&!reversed&&(!!row.recognized_at||Number(row.recognized_revenue||0)>0);
+    const method=String(row.payment_method||order?.paymentMethod||'cash').toLowerCase()==='bank'?'bank':'cash';
     return {
       id:row.id,
+      cloudId:row.id,
       number,
       invoiceNumber:number,
       cloudInvoiceNumber:row.invoice_number,
       orderId:row.order_id,
+      sourceOrderId:row.order_id,
       customerId:row.buyer_id,
       buyerId:row.buyer_id,
       status:paymentLabel(row.status),
@@ -168,13 +178,22 @@
       issuedAt:row.issued_at||row.created_at,
       dueAt:row.due_at||null,
       currency:row.currency||'TRY',
+      paymentMethod:row.payment_method||'cash',
       subtotal:Number(row.subtotal)||0,
       discount:Number(row.discount_total)||0,
       discountTotal:Number(row.discount_total)||0,
       total:Number(row.grand_total)||0,
       grandTotal:Number(row.grand_total)||0,
-      paid:Number(row.amount_paid)||0,
-      amountPaid:Number(row.amount_paid)||0,
+      paid:amountPaid,
+      amountPaid,
+      paymentMethod:method,
+      payments:amountPaid>0?[{date:row.recognized_at||row.issued_at||row.created_at,amount:amountPaid,method}]:[],
+      items:order?.items||[],
+      recognizedAt:row.recognized_at||null,
+      recognizedRevenue:Number(row.recognized_revenue)||0,
+      recognizedCogs:Number(row.recognized_cogs)||0,
+      recognizedProfit:Number(row.recognized_profit)||0,
+      approved:recognized,
       notes:row.notes||'',
       source:'cloud'
     };
@@ -206,8 +225,12 @@
 
     const state=runtimeState();
     state.orders=(ordersRes.data||[]).map(mapOrder);
-    state.salesInvoices=(invoicesRes.data||[]).map(mapInvoice);
-    // Some older renderers read state.invoices.
+    const ordersById=new Map(state.orders.map(order=>[String(order.id),order]));
+    state.salesInvoices=(invoicesRes.data||[])
+      .map(row=>mapInvoice(row,ordersById.get(String(row.order_id))))
+      .filter(invoice=>invoice.approved||invoice.cloudStatus==='refunded');
+    // The built-in accounting engine calculates: revenue - COGS - expenses.
+    // Keeping only delivered/recognized invoices here prevents pending orders from becoming profit.
     state.invoices=state.salesInvoices;
 
     persistRuntimeState(state);
@@ -425,14 +448,14 @@
   function setBusy(on,mode){
     $$('[data-store-order]').forEach(button=>{
       if(on){
-        if(!button.dataset.v132Text)button.dataset.v132Text=button.textContent;
+        if(!button.dataset.v133Text)button.dataset.v133Text=button.textContent;
         button.disabled=true;
         if(button.dataset.storeOrder===mode)button.textContent='جاري تسجيل الطلب…';
       }else{
         button.disabled=false;
-        if(button.dataset.v132Text){
-          button.textContent=button.dataset.v132Text;
-          delete button.dataset.v132Text;
+        if(button.dataset.v133Text){
+          button.textContent=button.dataset.v133Text;
+          delete button.dataset.v133Text;
         }
       }
     });
@@ -459,7 +482,7 @@
     root.innerHTML=`
       <div class="store-dialog-head">
         <h3>تم تسجيل الطلب</h3>
-        <button type="button" data-v132-order-return aria-label="إغلاق">✕</button>
+        <button type="button" data-v133-order-return aria-label="إغلاق">✕</button>
       </div>
       <div class="store-dialog-body checkout-success">
         <i>✓</i>
@@ -476,7 +499,7 @@
             </a>
           </div>`:''}
         <div style="margin-top:16px">
-          <button class="btn btn-gold" type="button" data-v132-order-return>العودة للمتجر</button>
+          <button class="btn btn-gold" type="button" data-v133-order-return>العودة للمتجر</button>
         </div>
       </div>`;
   }
@@ -536,9 +559,13 @@
       const result=await createCloudOrder(snapshot);
       const orderNumber=`ORD-${result.order_number}`;
 
-      // Pull the saved order back from Supabase immediately. This is what makes
-      // Admin Orders + Customer Account see the same source of truth.
-      await syncCommerce({silent:true});
+      // From this point the order is ALREADY saved. A later read/sync failure must never
+      // tell the customer that the order failed or encourage a duplicate retry.
+      try{
+        await syncCommerce({silent:true});
+      }catch(syncError){
+        console.warn(`[NUVEXA ${VERSION}] order saved but commerce refresh failed`,syncError);
+      }
       try{await syncCustomers({silent:true})}catch{}
 
       clearPersistedCart();
@@ -558,8 +585,10 @@
       console.error(`[NUVEXA ${VERSION}] checkout failed`,error);
       const msg=errorText(error);
 
-      if(/create_store_order|schema cache|function .* does not exist|PGRST202/i.test(msg)){
-        toast('وظيفة حفظ الطلب غير موجودة في Supabase. شغّل ملف إعداد الطلبات الموجود بالحزمة القديمة ثم جرّب مرة أخرى.','error');
+      if(/infinite recursion|order_items.*policy|policy.*order_items/i.test(msg)){
+        toast('سياسات الطلبات في Supabase تحتاج إصلاح V13.3. شغّل ملف RUN_THIS_FIRST_V13_3.sql مرة واحدة.','error');
+      }else if(/create_store_order|schema cache|function .* does not exist|PGRST202/i.test(msg)){
+        toast('وظيفة حفظ الطلب غير موجودة أو لم يتم تحديثها. شغّل ملف RUN_THIS_FIRST_V13_3.sql ثم جرّب مرة أخرى.','error');
       }else if(/auth|jwt|session/i.test(msg)){
         toast('انتهت جلسة تسجيل الدخول. سجّل الدخول بحساب Google ثم أعد المحاولة.','error');
       }else if(/Product is unavailable/i.test(msg)){
@@ -590,10 +619,10 @@
     try{
       if(kind==='account'){
         await syncCommerce({silent:true});
-      }else if(kind==='orders'||kind==='invoices'){
+      }else if(['orders','invoices','accounts','reports','sales','dashboard'].includes(kind)){
         await Promise.all([
           syncCommerce({silent:true}),
-          syncCustomers({silent:true}).catch(()=>false)
+          ['orders','invoices'].includes(kind)?syncCustomers({silent:true}).catch(()=>false):Promise.resolve(false)
         ]);
       }else if(kind==='customers'){
         await syncCustomers({silent:true});
@@ -615,7 +644,7 @@
 
   function installCardRemoval(){
     const style=document.createElement('style');
-    style.id='nuvexa-v132-hide-physical-summary';
+    style.id='nuvexa-v133-hide-physical-summary';
     style.textContent='.store-category-card[data-store-filter="physical"]{display:none!important}';
     document.head.appendChild(style);
 
@@ -634,7 +663,7 @@
   }
 
   document.addEventListener('click',event=>{
-    const target=event.target.closest?.('[data-store-order],[data-v132-order-return],[data-action="customer-account"],[data-open-module]');
+    const target=event.target.closest?.('[data-store-order],[data-v133-order-return],[data-action="customer-account"],[data-open-module]');
     if(!target)return;
 
     if(target.matches('[data-store-order]')){
@@ -644,7 +673,7 @@
       return;
     }
 
-    if(target.matches('[data-v132-order-return]')){
+    if(target.matches('[data-v133-order-return]')){
       event.preventDefault();
       event.stopImmediatePropagation();
       savedOrderPendingClose=false;
@@ -672,7 +701,7 @@
 
     if(target.matches('[data-open-module]')){
       const module=target.dataset.openModule;
-      if(!['orders','invoices','customers'].includes(module))return;
+      if(!['orders','invoices','customers','accounts','reports','sales','dashboard'].includes(module))return;
 
       event.preventDefault();
       event.stopImmediatePropagation();

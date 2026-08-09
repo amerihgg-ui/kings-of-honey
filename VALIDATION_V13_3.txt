@@ -1,0 +1,12 @@
+PASS — JavaScript syntax: order-flow.js
+PASS — JavaScript syntax: reviews.js
+PASS — JavaScript syntax: service-worker.js
+PASS — index loads order-flow V13.3
+PASS — index loads reviews
+PASS — SQL has safe orders policy
+PASS — SQL has safe order_items policy
+PASS — SQL recognizes only completed
+PASS — SQL creates cost snapshot
+PASS — SQL creates accounting posting
+PASS — SQL future checkout returns null invoice
+PASS — migration restore uses original posting user instead of SQL Editor auth.uid()
