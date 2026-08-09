@@ -1,27 +1,29 @@
-/* NUVEXA HUB V13.1 — Unified Store Order Flow
-   Scope: checkout only.
-   - BOTH "platform" and "WhatsApp" paths save the order in Supabase first.
-   - Customer profile is upserted by auth user id (no duplicate buyer rows).
-   - WhatsApp opens only after the cloud order is successfully created.
-   - Double-submit protection included.
-   - No changes to Google OAuth/auth.js, products, seller, admin, or visual design.
+/* NUVEXA HUB V13.2 — Order Persistence + Live History Sync
+   Scope ONLY:
+   1) Save BOTH platform and WhatsApp checkout to Supabase BEFORE success/WhatsApp.
+   2) Keep buyer profile updated without duplicate cloud buyer records.
+   3) Refresh orders/invoices from Supabase before Customer Account and admin Orders/Invoices.
+   4) Refresh Buyers before admin Customers.
+   5) Remove ONLY the physical-products category summary card from the storefront.
+   No Google OAuth/auth.js changes. No redesign.
 */
 (()=>{'use strict';
 
-  const VERSION='13.1';
-  const CUSTOMER_SESSION_KEY='nuvexa_hub_customer_session_v10';
-  const STORE_CART_KEY='nuvexa_hub_store_cart_v10';
+  const VERSION='13.2';
   const STATE_KEY='nuvexa_hub_enterprise_v10';
+  const CUSTOMER_KEY='nuvexa_hub_customer_session_v10';
+  const CART_KEY='nuvexa_hub_store_cart_v10';
   const OAUTH_INTENT_KEY='nuvexa_hub_oauth_intent_v10';
 
   let submitting=false;
-  let savedAwaitingReload=false;
+  let savedOrderPendingClose=false;
+  const bypassClicks=new WeakSet();
 
-  const qs=(selector,root=document)=>root.querySelector(selector);
-  const qsa=(selector,root=document)=>[...root.querySelectorAll(selector)];
-  const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({
+  const $=(s,r=document)=>r.querySelector(s);
+  const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({
     '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'
-  }[char]));
+  }[c]));
 
   function readJSON(key,fallback){
     try{
@@ -30,36 +32,34 @@
     }catch{return fallback}
   }
 
-  function customerSession(){
-    return readJSON(CUSTOMER_SESSION_KEY,null);
+  function writeJSON(key,value){
+    try{
+      localStorage.setItem(key,JSON.stringify(value));
+      return true;
+    }catch{return false}
   }
 
-  function cart(){
-    const value=readJSON(STORE_CART_KEY,[]);
-    return Array.isArray(value)?value:[];
-  }
-
-  function platformState(){
-    return readJSON(STATE_KEY,{});
-  }
-
-  function supabaseClient(){
+  function sb(){
     return window.NuvexaAuth?.getClient?.()||null;
   }
 
-  function currency(){
-    return platformState()?.settings?.currency||'₺';
+  function runtimeState(){
+    return window.NuvexaRuntime?.getState?.()||readJSON(STATE_KEY,{});
   }
 
-  function money(value){
-    const amount=Number(value)||0;
-    return `${amount.toLocaleString('ar-EG',{maximumFractionDigits:2})} ${currency()}`;
+  function customerSession(){
+    return readJSON(CUSTOMER_KEY,null);
   }
 
-  function notify(message,type='ok'){
-    const zone=qs('#toastZone');
+  function cart(){
+    const value=readJSON(CART_KEY,[]);
+    return Array.isArray(value)?value:[];
+  }
+
+  function toast(message,type='ok'){
+    const zone=$('#toastZone');
     if(!zone){
-      console[type==='error'?'warn':'log'](`[NUVEXA V${VERSION}]`,message);
+      console[type==='error'?'warn':'log'](`[NUVEXA ${VERSION}]`,message);
       return;
     }
     const el=document.createElement('div');
@@ -71,19 +71,256 @@
       el.style.opacity='0';
       el.style.transform='translateY(8px)';
       setTimeout(()=>el.remove(),220);
-    },3600);
+    },3900);
   }
 
-  function whatsappNumber(){
-    return String(platformState()?.settings?.whatsappNumber||'').replace(/\D/g,'');
+  function errorText(error){
+    return String(error?.message||error?.details||error?.hint||'حدث خطأ غير متوقع');
   }
 
-  function snapshot(mode){
+  async function currentUser(){
+    const client=sb();
+    if(!client)return null;
+    const {data,error}=await client.auth.getSession();
+    if(error)throw error;
+    return data?.session?.user||null;
+  }
+
+  function statusLabel(status){
+    return ({
+      new:'جديد',
+      confirmed:'جاهز للتوصيل',
+      processing:'في الطريق',
+      completed:'تم التسليم',
+      cancelled:'ملغية',
+      refunded:'مرتجع'
+    })[status]||status||'جديد';
+  }
+
+  function paymentLabel(status){
+    return ({
+      pending:'معلقة',
+      paid:'مدفوعة',
+      partially_paid:'مدفوعة جزئيًا',
+      failed:'فشل الدفع',
+      refunded:'مستردة'
+    })[status]||status||'معلقة';
+  }
+
+  function mapOrder(row){
+    const items=(row.order_items||[]).map(item=>({
+      id:item.id,
+      productId:item.product_id,
+      sellerId:item.seller_id,
+      name:item.product_name,
+      productName:item.product_name,
+      qty:Number(item.quantity)||0,
+      quantity:Number(item.quantity)||0,
+      price:Number(item.unit_price)||0,
+      unitPrice:Number(item.unit_price)||0,
+      total:Number(item.line_total)||0,
+      lineTotal:Number(item.line_total)||0
+    }));
+    const number=`ORD-${row.order_number}`;
+    const address=row.shipping_address?.address||row.shipping_address?.text||'';
+    return {
+      id:row.id,
+      number,
+      orderNumber:number,
+      cloudOrderNumber:row.order_number,
+      customerId:row.buyer_id,
+      buyerId:row.buyer_id,
+      status:statusLabel(row.status),
+      cloudStatus:row.status,
+      date:row.created_at,
+      createdAt:row.created_at,
+      updatedAt:row.updated_at||row.created_at,
+      currency:row.currency||'TRY',
+      subtotal:Number(row.subtotal)||0,
+      discount:Number(row.discount_total)||0,
+      discountTotal:Number(row.discount_total)||0,
+      shipping:Number(row.shipping_total)||0,
+      shippingTotal:Number(row.shipping_total)||0,
+      total:Number(row.grand_total)||0,
+      grandTotal:Number(row.grand_total)||0,
+      notes:row.notes||'',
+      address,
+      shippingAddress:row.shipping_address||{},
+      items,
+      lines:items,
+      source:'cloud'
+    };
+  }
+
+  function mapInvoice(row){
+    const number=`INV-${row.invoice_number}`;
+    return {
+      id:row.id,
+      number,
+      invoiceNumber:number,
+      cloudInvoiceNumber:row.invoice_number,
+      orderId:row.order_id,
+      customerId:row.buyer_id,
+      buyerId:row.buyer_id,
+      status:paymentLabel(row.status),
+      cloudStatus:row.status,
+      date:row.issued_at||row.created_at,
+      issuedAt:row.issued_at||row.created_at,
+      dueAt:row.due_at||null,
+      currency:row.currency||'TRY',
+      subtotal:Number(row.subtotal)||0,
+      discount:Number(row.discount_total)||0,
+      discountTotal:Number(row.discount_total)||0,
+      total:Number(row.grand_total)||0,
+      grandTotal:Number(row.grand_total)||0,
+      paid:Number(row.amount_paid)||0,
+      amountPaid:Number(row.amount_paid)||0,
+      notes:row.notes||'',
+      source:'cloud'
+    };
+  }
+
+  function persistRuntimeState(state){
+    if(!state||typeof state!=='object')return;
+    writeJSON(STATE_KEY,state);
+  }
+
+  async function syncCommerce({silent=false}={}){
+    const client=sb();
+    if(!client)return false;
+
+    const user=await currentUser();
+    if(!user)return false;
+
+    const [ordersRes,invoicesRes]=await Promise.all([
+      client.from('orders')
+        .select('*,order_items(*)')
+        .order('created_at',{ascending:false}),
+      client.from('invoices')
+        .select('*')
+        .order('issued_at',{ascending:false})
+    ]);
+
+    if(ordersRes.error)throw ordersRes.error;
+    if(invoicesRes.error)throw invoicesRes.error;
+
+    const state=runtimeState();
+    state.orders=(ordersRes.data||[]).map(mapOrder);
+    state.salesInvoices=(invoicesRes.data||[]).map(mapInvoice);
+    // Some older renderers read state.invoices.
+    state.invoices=state.salesInvoices;
+
+    persistRuntimeState(state);
+    if(!silent)console.info(`[NUVEXA ${VERSION}] cloud commerce synced`,state.orders.length);
+    return true;
+  }
+
+  function normalizeCloudCustomer(row,existing){
+    const uid=row.user_id||row.id;
+    return {
+      ...(existing||{}),
+      id:existing?.id||uid,
+      authUserId:uid,
+      userId:uid,
+      name:row.full_name||row.name||existing?.name||'عميل',
+      fullName:row.full_name||row.name||existing?.fullName||'عميل',
+      phone:row.phone||existing?.phone||'',
+      email:row.email||existing?.email||'',
+      country:row.country||existing?.country||'',
+      address:row.address||existing?.address||'',
+      notes:row.notes||existing?.notes||'',
+      createdAt:row.created_at||existing?.createdAt||new Date().toISOString(),
+      source:'cloud'
+    };
+  }
+
+  async function syncCustomers({silent=true}={}){
+    const client=sb();
+    if(!client)return false;
+    const user=await currentUser();
+    if(!user)return false;
+
+    let rows=null;
+
+    // Prefer the customer directory used by newer NUVEXA builds.
+    const customerProfiles=await client.from('customer_profiles').select('*');
+    if(!customerProfiles.error){
+      rows=customerProfiles.data||[];
+    }else{
+      // Safe fallback: partners can read profiles; normal buyers will simply get
+      // only their allowed row and this never blocks checkout/history.
+      const profiles=await client.from('profiles')
+        .select('id,email,full_name,phone,country,created_at,status');
+      if(!profiles.error)rows=profiles.data||[];
+    }
+
+    if(!rows)return false;
+
+    const state=runtimeState();
+    const current=Array.isArray(state.customers)?state.customers:[];
+    const byUser=new Map();
+    current.forEach(c=>{
+      const key=c.authUserId||c.userId||c.id;
+      if(key)byUser.set(String(key),c);
+    });
+
+    const cloud=rows.map(row=>{
+      const uid=row.user_id||row.id;
+      return normalizeCloudCustomer(row,byUser.get(String(uid)));
+    });
+
+    // Keep purely local/manual customer records, replace/update matching cloud ones.
+    const cloudIds=new Set(cloud.map(c=>String(c.authUserId||c.userId||c.id)));
+    const localOnly=current.filter(c=>{
+      const key=String(c.authUserId||c.userId||c.id||'');
+      return !cloudIds.has(key);
+    });
+
+    state.customers=[...cloud,...localOnly];
+    persistRuntimeState(state);
+    if(!silent)console.info(`[NUVEXA ${VERSION}] customers synced`,cloud.length);
+    return true;
+  }
+
+  async function updateBuyerProfile(user,snapshot){
+    const client=sb();
+    if(!client)return;
+
+    const name=String(snapshot.session?.name||user.user_metadata?.full_name||user.user_metadata?.name||'').trim();
+    const phone=String(snapshot.session?.phone||'').trim();
+
+    if(name.length<2)throw new Error('اكتب اسم العميل قبل إتمام الطلب.');
+    if(phone.length<7)throw new Error('أضف رقم الهاتف قبل إتمام الطلب.');
+
+    // Canonical identity/profile row. This is an UPDATE of the logged-in buyer,
+    // never a second auth/profile record.
+    const profileUpdate=await client.from('profiles')
+      .update({full_name:name,phone})
+      .eq('id',user.id);
+
+    if(profileUpdate.error){
+      console.warn(`[NUVEXA ${VERSION}] profiles update:`,profileUpdate.error.message);
+    }
+
+    // Newer NUVEXA customer directory RPC. If unavailable on an older DB,
+    // do not block the actual order; profiles + buyer_id still preserve ownership/history.
+    try{
+      const {error}=await client.rpc('save_my_customer_profile',{
+        p_full_name:name,
+        p_phone:phone
+      });
+      if(error)console.warn(`[NUVEXA ${VERSION}] customer directory RPC:`,error.message);
+    }catch(error){
+      console.warn(`[NUVEXA ${VERSION}] customer directory RPC unavailable`,error);
+    }
+  }
+
+  function checkoutSnapshot(mode){
     const items=cart();
     const session=customerSession();
-    const address=String(qs('#storeOrderAddress')?.value||'').trim();
-    const notes=String(qs('#storeOrderNotes')?.value||'').trim();
-    const paymentMethod=String(qs('#storePaymentMethod')?.value||'cash').trim()||'cash';
+    const address=String($('#storeOrderAddress')?.value||'').trim();
+    const notes=String($('#storeOrderNotes')?.value||'').trim();
+    const paymentMethod=String($('#storePaymentMethod')?.value||'cash').trim()||'cash';
 
     return {
       mode,
@@ -96,274 +333,386 @@
     };
   }
 
-  function setBusy(on,mode='site'){
-    qsa('[data-store-order]').forEach(button=>{
+  async function createCloudOrder(snapshot){
+    const client=sb();
+    if(!client)throw new Error('تعذر الاتصال بخدمة الطلبات.');
+
+    const pItems=snapshot.items.map(item=>({
+      product_id:item.productId,
+      quantity:Math.max(1,Number(item.qty)||1)
+    }));
+
+    if(pItems.some(item=>!item.product_id)){
+      throw new Error('يوجد عنصر في السلة غير مربوط بمنتج المنصة. أعد فتح المنتج وأضفه للسلة مرة أخرى.');
+    }
+
+    const channel=snapshot.mode==='whatsapp'?'WhatsApp':'المنصة';
+    const notes=[
+      snapshot.notes,
+      `قناة استكمال الطلب: ${channel}`
+    ].filter(Boolean).join('\n');
+
+    const {data,error}=await client.rpc('create_store_order',{
+      p_items:pItems,
+      p_shipping_address:{address:snapshot.address},
+      p_notes:notes,
+      p_payment_method:snapshot.paymentMethod
+    });
+
+    if(error)throw error;
+    const result=Array.isArray(data)?data[0]:data;
+    if(!result?.order_id)throw new Error('لم يرجع الخادم رقم الطلب بعد الحفظ.');
+    return result;
+  }
+
+  function whatsappNumber(){
+    const state=runtimeState();
+    return String(state?.settings?.whatsappNumber||'').replace(/\D/g,'');
+  }
+
+  function currency(){
+    return runtimeState()?.settings?.currency||'₺';
+  }
+
+  function money(value){
+    return `${Number(value||0).toLocaleString('ar-EG',{maximumFractionDigits:2})} ${currency()}`;
+  }
+
+  function whatsappMessage(snapshot,orderNumber){
+    return [
+      'مرحبًا، تم تسجيل طلبي على NUVEXA HUB وأرغب في استكمال التواصل عبر واتساب.',
+      '',
+      `رقم الطلب: ${orderNumber}`,
+      '',
+      ...snapshot.items.map(item=>`• ${item.name||'منتج'} × ${item.qty||1} = ${money((Number(item.qty)||0)*(Number(item.price)||0))}`),
+      '',
+      `الإجمالي: ${money(snapshot.total)}`,
+      `الاسم: ${snapshot.session?.name||''}`,
+      `الهاتف: ${snapshot.session?.phone||''}`,
+      `العنوان: ${snapshot.address||'غير مطلوب'}`,
+      `ملاحظات: ${snapshot.notes||'لا توجد'}`
+    ].join('\n');
+  }
+
+  function openWaitingTab(){
+    try{
+      const tab=window.open('about:blank','_blank');
+      if(tab){
+        try{tab.opener=null}catch{}
+        try{
+          tab.document.write('<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>NUVEXA HUB</title><body style="font-family:Arial,sans-serif;text-align:center;padding:45px"><h2>NUVEXA HUB</h2><p>جاري تسجيل الطلب داخل المنصة قبل فتح واتساب…</p></body></html>');
+          tab.document.close();
+        }catch{}
+      }
+      return tab;
+    }catch{return null}
+  }
+
+  function closeTab(tab){
+    try{if(tab&&!tab.closed)tab.close()}catch{}
+  }
+
+  function goWhatsApp(tab,url){
+    try{
+      if(tab&&!tab.closed){
+        tab.location.replace(url);
+        return true;
+      }
+    }catch{}
+    try{return !!window.open(url,'_blank','noopener')}catch{return false}
+  }
+
+  function setBusy(on,mode){
+    $$('[data-store-order]').forEach(button=>{
       if(on){
-        if(!button.dataset.v13OriginalText)button.dataset.v13OriginalText=button.textContent;
+        if(!button.dataset.v132Text)button.dataset.v132Text=button.textContent;
         button.disabled=true;
         if(button.dataset.storeOrder===mode)button.textContent='جاري تسجيل الطلب…';
       }else{
         button.disabled=false;
-        if(button.dataset.v13OriginalText){
-          button.textContent=button.dataset.v13OriginalText;
-          delete button.dataset.v13OriginalText;
+        if(button.dataset.v132Text){
+          button.textContent=button.dataset.v132Text;
+          delete button.dataset.v132Text;
         }
       }
     });
   }
 
-  function showGoogleLoginRequired(){
+  function requireGoogle(){
     try{sessionStorage.setItem(OAUTH_INTENT_KEY,'checkout')}catch{}
-    notify('لتسجيل الطلب داخل المنصة، أكمل تسجيل الدخول بحساب Google أولًا.','error');
-    const dialog=qs('#customerAuthDialog');
+    toast('لازم تسجّل الدخول بحساب Google حتى يُحفظ الطلب وتقدر تتابع حالته من حسابك.','error');
+    const dialog=$('#customerAuthDialog');
     if(dialog&&!dialog.open){
       try{dialog.showModal()}catch{}
     }
   }
 
-  async function authenticatedUser(sb){
-    const {data,error}=await sb.auth.getSession();
-    if(error)throw error;
-    return data?.session?.user||null;
+  function clearPersistedCart(){
+    writeJSON(CART_KEY,[]);
   }
 
-  async function upsertBuyerProfile(sb,snap){
-    const name=String(snap.session?.name||'').trim();
-    const phone=String(snap.session?.phone||'').trim();
-
-    if(name.length<2)throw new Error('اكتب اسم العميل قبل إتمام الطلب');
-    if(phone.length<7)throw new Error('اكتب رقم هاتف صحيحًا قبل إتمام الطلب');
-
-    const {error}=await sb.rpc('save_my_customer_profile',{
-      p_full_name:name,
-      p_phone:phone
-    });
-    if(error)throw error;
-  }
-
-  async function createOrder(sb,snap){
-    const items=snap.items.map(item=>({
-      product_id:item.productId,
-      quantity:Math.max(1,Number(item.qty)||1)
-    }));
-
-    const channel=snap.mode==='whatsapp'?'WhatsApp':'المنصة';
-    const cloudNotes=[
-      snap.notes,
-      `قناة استكمال الطلب: ${channel}`
-    ].filter(Boolean).join('\n');
-
-    const {data,error}=await sb.rpc('create_store_order',{
-      p_items:items,
-      p_shipping_address:{address:snap.address},
-      p_notes:cloudNotes,
-      p_payment_method:snap.paymentMethod
-    });
-
-    if(error)throw error;
-    return Array.isArray(data)?data[0]:data;
-  }
-
-  function orderNumber(result){
-    return `ORD-${result?.order_number||''}`;
-  }
-
-  function buildWhatsAppMessage(snap,number){
-    return [
-      'مرحبًا، تم تسجيل طلبي على NUVEXA HUB وأرغب في استكمال التواصل عبر واتساب.',
-      '',
-      `رقم الطلب: ${number}`,
-      '',
-      ...snap.items.map(item=>`• ${item.name} × ${item.qty} = ${money((Number(item.qty)||0)*(Number(item.price)||0))}`),
-      '',
-      `الإجمالي: ${money(snap.total)}`,
-      `الاسم: ${snap.session?.name||''}`,
-      `الهاتف: ${snap.session?.phone||''}`,
-      `العنوان: ${snap.address||'غير مطلوب'}`,
-      `ملاحظات: ${snap.notes||'لا توجد'}`
-    ].join('\n');
-  }
-
-  function openWaitingWhatsAppTab(){
-    let tab=null;
-    try{
-      tab=window.open('about:blank','_blank');
-      if(tab){
-        try{tab.opener=null}catch{}
-        try{
-          tab.document.open();
-          tab.document.write(`<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>NUVEXA HUB</title><body style="font-family:Arial,sans-serif;padding:40px;text-align:center"><h2>NUVEXA HUB</h2><p>جاري تسجيل الطلب قبل فتح واتساب…</p></body></html>`);
-          tab.document.close();
-        }catch{}
-      }
-    }catch{}
-    return tab;
-  }
-
-  function navigateWhatsApp(tab,url){
-    if(tab&&!tab.closed){
-      try{
-        tab.location.replace(url);
-        return true;
-      }catch{}
-    }
-    try{
-      const opened=window.open(url,'_blank','noopener');
-      return !!opened;
-    }catch{return false}
-  }
-
-  function closeWaitingTab(tab){
-    if(tab&&!tab.closed){
-      try{tab.close()}catch{}
-    }
-  }
-
-  function clearStoredCart(){
-    try{localStorage.setItem(STORE_CART_KEY,'[]')}catch{}
-  }
-
-  function renderSuccess({number,mode,whatsappUrl='',whatsappOpened=false}){
-    const root=qs('#storeCheckoutDialogContent');
+  function renderOrderSuccess({orderNumber,mode,whatsappUrl,whatsappOpened}){
+    const root=$('#storeCheckoutDialogContent');
     if(!root)return;
-
     const viaWhatsApp=mode==='whatsapp';
+
     root.innerHTML=`
       <div class="store-dialog-head">
-        <h3>تم استلام الطلب</h3>
-        <button type="button" data-v13-order-return>✕</button>
+        <h3>تم تسجيل الطلب</h3>
+        <button type="button" data-v132-order-return aria-label="إغلاق">✕</button>
       </div>
       <div class="store-dialog-body checkout-success">
         <i>✓</i>
-        <h2>طلبك اتسجل بنجاح</h2>
+        <h2>طلبك محفوظ داخل NUVEXA HUB</h2>
         <p>${viaWhatsApp
-          ?'تم حفظ الطلب داخل المنصة أولًا، ثم تجهيز التواصل عبر واتساب.'
-          :'تم حفظ الطلب والفاتورة داخل حسابك على المنصة.'}</p>
-        <span class="checkout-order-number">${esc(number)}</span>
+          ?'تم حفظ الطلب أولًا داخل المنصة، ويمكنك الآن استكمال التواصل عبر واتساب.'
+          :'تم حفظ الطلب داخل حسابك، ويمكنك متابعة حالته من «حسابي».'}</p>
+        <span class="checkout-order-number">${esc(orderNumber)}</span>
+        <p style="margin-top:10px"><strong>الحالة الحالية: جديد</strong></p>
         ${viaWhatsApp&&whatsappUrl?`
           <div style="margin-top:14px">
             <a class="btn btn-success" href="${esc(whatsappUrl)}" target="_blank" rel="noopener">
-              ${whatsappOpened?'فتح واتساب مرة أخرى':'فتح واتساب لاستكمال التواصل'}
+              ${whatsappOpened?'فتح واتساب مرة أخرى':'فتح واتساب'}
             </a>
           </div>`:''}
         <div style="margin-top:16px">
-          <button class="btn btn-gold" type="button" data-v13-order-return>العودة للمتجر</button>
+          <button class="btn btn-gold" type="button" data-v132-order-return>العودة للمتجر</button>
         </div>
       </div>`;
   }
 
-  async function handleOrder(button){
+  async function submitCheckout(button){
     const mode=button?.dataset?.storeOrder;
     if(!['site','whatsapp'].includes(mode)||submitting)return;
 
-    const snap=snapshot(mode);
-    if(!snap.items.length){
-      notify('السلة فارغة.','error');
+    const snapshot=checkoutSnapshot(mode);
+    if(!snapshot.items.length){
+      toast('السلة فارغة.','error');
       return;
     }
 
-    const sb=supabaseClient();
-    if(!sb){
-      notify('تعذر الاتصال بخدمة الطلبات.','error');
+    const client=sb();
+    if(!client){
+      toast('تعذر الاتصال بـ Supabase.','error');
       return;
     }
 
-    const user=await authenticatedUser(sb);
+    let user;
+    try{user=await currentUser()}
+    catch(error){
+      toast('تعذر التحقق من جلسة تسجيل الدخول.','error');
+      return;
+    }
+
     if(!user){
-      showGoogleLoginRequired();
+      requireGoogle();
       return;
     }
 
-    // The cloud order belongs to the authenticated account.
-    if(snap.session?.userId&&snap.session.userId!==user.id){
-      notify('جلسة العميل تحتاج إلى تحديث. سجّل الدخول مرة أخرى.','error');
+    if(snapshot.session?.userId&&snapshot.session.userId!==user.id){
+      toast('جلسة العميل لا تطابق حساب Google الحالي. سجّل الدخول مرة أخرى.','error');
       return;
     }
 
-    const phone=mode==='whatsapp'?whatsappNumber():'';
-    if(mode==='whatsapp'&&phone.length<8){
-      notify('الطلب عبر واتساب غير مفعّل حاليًا.','error');
-      return;
+    let waTab=null;
+    let waPhone='';
+    if(mode==='whatsapp'){
+      waPhone=whatsappNumber();
+      if(waPhone.length<8){
+        toast('رقم واتساب غير مضبوط في إعدادات المنصة.','error');
+        return;
+      }
+      // Open synchronously so browser popup blockers do not block it after await.
+      waTab=openWaitingTab();
     }
-
-    // Open a blank tab during the direct click so browsers do not block WhatsApp
-    // after the asynchronous cloud save finishes.
-    const whatsappTab=mode==='whatsapp'?openWaitingWhatsAppTab():null;
 
     submitting=true;
     setBusy(true,mode);
 
     try{
-      // Upsert = new buyer is created once; an existing buyer is updated, never duplicated.
-      await upsertBuyerProfile(sb,snap);
+      await updateBuyerProfile(user,snapshot);
 
-      // The order is ALWAYS created in NUVEXA HUB before any WhatsApp redirect.
-      const result=await createOrder(sb,snap);
-      const number=orderNumber(result);
+      // Critical rule: cloud order is created BEFORE platform success or WhatsApp.
+      const result=await createCloudOrder(snapshot);
+      const orderNumber=`ORD-${result.order_number}`;
+
+      // Pull the saved order back from Supabase immediately. This is what makes
+      // Admin Orders + Customer Account see the same source of truth.
+      await syncCommerce({silent:true});
+      try{await syncCustomers({silent:true})}catch{}
+
+      clearPersistedCart();
 
       let whatsappUrl='';
       let whatsappOpened=false;
-
       if(mode==='whatsapp'){
-        const message=buildWhatsAppMessage(snap,number);
-        whatsappUrl=`https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-        whatsappOpened=navigateWhatsApp(whatsappTab,whatsappUrl);
+        whatsappUrl=`https://wa.me/${waPhone}?text=${encodeURIComponent(whatsappMessage(snapshot,orderNumber))}`;
+        whatsappOpened=goWhatsApp(waTab,whatsappUrl);
       }
 
-      clearStoredCart();
-      savedAwaitingReload=true;
-      renderSuccess({number,mode,whatsappUrl,whatsappOpened});
-      notify(`تم تسجيل الطلب ${number}`);
+      savedOrderPendingClose=true;
+      renderOrderSuccess({orderNumber,mode,whatsappUrl,whatsappOpened});
+      toast(`تم تسجيل الطلب ${orderNumber} داخل المنصة.`);
     }catch(error){
-      closeWaitingTab(whatsappTab);
-      console.warn('NUVEXA unified order flow:',error);
-      const message=String(error?.message||'تعذر تسجيل الطلب');
-      notify(
-        /auth|jwt|session/i.test(message)
-          ?'انتهت جلسة تسجيل الدخول. سجّل الدخول بحساب Google ثم حاول مرة أخرى.'
-          :message,
-        'error'
-      );
+      closeTab(waTab);
+      console.error(`[NUVEXA ${VERSION}] checkout failed`,error);
+      const msg=errorText(error);
+
+      if(/create_store_order|schema cache|function .* does not exist|PGRST202/i.test(msg)){
+        toast('وظيفة حفظ الطلب غير موجودة في Supabase. شغّل ملف إعداد الطلبات الموجود بالحزمة القديمة ثم جرّب مرة أخرى.','error');
+      }else if(/auth|jwt|session/i.test(msg)){
+        toast('انتهت جلسة تسجيل الدخول. سجّل الدخول بحساب Google ثم أعد المحاولة.','error');
+      }else if(/Product is unavailable/i.test(msg)){
+        toast('المنتج غير متاح حاليًا أو لم يتم اعتماده بعد.','error');
+      }else{
+        toast(`لم يتم حفظ الطلب: ${msg}`,'error');
+      }
     }finally{
       submitting=false;
       setBusy(false,mode);
     }
   }
 
-  function returnToStore(){
-    savedAwaitingReload=false;
-    // Reload is intentional: app.js keeps its cart in a private runtime variable.
-    // Reloading makes it read the already-cleared persisted cart and the new cloud order.
-    location.reload();
-  }
-
-  document.addEventListener('click',event=>{
-    const button=event.target.closest('[data-store-order]');
-    if(button){
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      handleOrder(button);
+  async function refreshBeforeOpen(target,kind){
+    if(bypassClicks.has(target)){
+      bypassClicks.delete(target);
       return;
     }
 
-    const back=event.target.closest('[data-v13-order-return]');
-    if(back){
+    const session=customerSession();
+    // Local-only login has no cloud buyer id; do not block its existing UI.
+    if(kind==='account'&&!session?.userId)return;
+
+    const user=await currentUser().catch(()=>null);
+    if(!user)return;
+
+    eventGuard.current=true;
+    try{
+      if(kind==='account'){
+        await syncCommerce({silent:true});
+      }else if(kind==='orders'||kind==='invoices'){
+        await Promise.all([
+          syncCommerce({silent:true}),
+          syncCustomers({silent:true}).catch(()=>false)
+        ]);
+      }else if(kind==='customers'){
+        await syncCustomers({silent:true});
+      }
+    }finally{
+      eventGuard.current=false;
+    }
+
+    bypassClicks.add(target);
+    target.click();
+  }
+
+  const eventGuard={current:false};
+
+  // ===== Remove ONLY the storefront physical-products summary card =====
+  function removePhysicalSummaryCard(root=document){
+    root.querySelectorAll?.('.store-category-card[data-store-filter="physical"]').forEach(card=>card.remove());
+  }
+
+  function installCardRemoval(){
+    const style=document.createElement('style');
+    style.id='nuvexa-v132-hide-physical-summary';
+    style.textContent='.store-category-card[data-store-filter="physical"]{display:none!important}';
+    document.head.appendChild(style);
+
+    removePhysicalSummaryCard(document);
+    const observer=new MutationObserver(mutations=>{
+      for(const mutation of mutations){
+        for(const node of mutation.addedNodes){
+          if(node.nodeType===1){
+            if(node.matches?.('.store-category-card[data-store-filter="physical"]'))node.remove();
+            else removePhysicalSummaryCard(node);
+          }
+        }
+      }
+    });
+    observer.observe(document.body,{childList:true,subtree:true});
+  }
+
+  document.addEventListener('click',event=>{
+    const target=event.target.closest?.('[data-store-order],[data-v132-order-return],[data-action="customer-account"],[data-open-module]');
+    if(!target)return;
+
+    if(target.matches('[data-store-order]')){
       event.preventDefault();
       event.stopImmediatePropagation();
-      returnToStore();
+      submitCheckout(target);
+      return;
+    }
+
+    if(target.matches('[data-v132-order-return]')){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      savedOrderPendingClose=false;
+      location.reload();
+      return;
+    }
+
+    if(bypassClicks.has(target)){
+      bypassClicks.delete(target);
+      return;
+    }
+
+    if(target.matches('[data-action="customer-account"]')){
+      const session=customerSession();
+      if(!session?.userId)return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      refreshBeforeOpen(target,'account').catch(error=>{
+        console.warn(`[NUVEXA ${VERSION}] account sync`,error);
+        bypassClicks.add(target);
+        target.click();
+      });
+      return;
+    }
+
+    if(target.matches('[data-open-module]')){
+      const module=target.dataset.openModule;
+      if(!['orders','invoices','customers'].includes(module))return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      refreshBeforeOpen(target,module).catch(error=>{
+        console.warn(`[NUVEXA ${VERSION}] module sync`,module,error);
+        bypassClicks.add(target);
+        target.click();
+      });
     }
   },true);
 
   window.addEventListener('DOMContentLoaded',()=>{
-    const dialog=qs('#storeCheckoutDialog');
+    installCardRemoval();
+
+    const dialog=$('#storeCheckoutDialog');
     if(dialog){
       dialog.addEventListener('close',()=>{
-        if(savedAwaitingReload)returnToStore();
+        if(savedOrderPendingClose){
+          savedOrderPendingClose=false;
+          location.reload();
+        }
       });
     }
+
+    // Initial background sync for an already authenticated Google session.
+    setTimeout(async()=>{
+      try{
+        if(await currentUser()){
+          await syncCommerce({silent:true});
+        }
+      }catch(error){
+        console.warn(`[NUVEXA ${VERSION}] initial commerce sync`,error);
+      }
+    },1200);
   },{once:true});
 
   window.NuvexaOrderFlow=Object.freeze({
-    version:VERSION
+    version:VERSION,
+    syncCommerce:()=>syncCommerce({silent:false}),
+    syncCustomers:()=>syncCustomers({silent:false})
   });
+
 })();

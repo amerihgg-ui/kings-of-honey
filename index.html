@@ -53,10 +53,8 @@
     })();
   </script>
   <link rel="stylesheet" href="assets/css/app.css?v=12.9" />
-
 </head>
 <body>
-
   <section id="splashScreen" class="splash-screen" aria-label="افتتاح NUVEXA HUB">
     <div class="splash-inner">
       <div class="splash-fallback"><img src="assets/branding/logo-main.png" alt="NUVEXA HUB" /></div>
@@ -69,7 +67,8 @@
       <button id="nuvexaIntroSkip" class="splash-skip" type="button" aria-label="تخطي الفيديو الافتتاحي">تخطي</button>
     </div>
   </section>
-<section id="storePage" class="store-page hidden">
+
+  <section id="storePage" class="store-page hidden">
     <header class="store-header">
       <div class="store-trust-strip" aria-label="مزايا المتجر">
         <span>🛡️ تجربة آمنة وبيانات محمية</span>
@@ -89,6 +88,7 @@
         </div>
       </div>
     </header>
+
     <section id="storeCinematicHero" class="store-cinematic-hero" aria-label="فيديو NUVEXA HUB في أعلى الصفحة">
       <video class="store-cinematic-video store-cinematic-desktop" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
         <source src="assets/videos/nuvexa_hub_intro_desktop.mp4" type="video/mp4" />
@@ -98,7 +98,9 @@
       </video>
       <div class="store-cinematic-shade" aria-hidden="true"></div>
     </section>
+
     <main id="storeContent" class="store-main"></main>
+
     <nav class="store-mobile-nav" aria-label="التنقل السريع">
       <button class="active" data-action="store-home"><span>⌂</span>الرئيسية</button>
       <button data-store-scroll="products"><span>▦</span>المنتجات</button>
@@ -107,7 +109,6 @@
       <button data-action="store-cart"><span>🛒</span>السلة</button>
     </nav>
   </section>
-
 
   <section id="sellerPage" class="seller-page hidden" aria-label="لوحة البائع">
     <header class="seller-header">
@@ -261,6 +262,7 @@
       <div class="modal-foot"><button id="modalSave" class="btn btn-gold" value="default">حفظ</button><button type="button" class="btn btn-soft" data-action="close-modal">إلغاء</button></div>
     </form>
   </dialog>
+
   <button id="quickFab" class="quick-fab hidden" data-action="quick-actions" aria-label="إجراء سريع">＋</button>
   <div id="quickMenu" class="quick-menu hidden" aria-label="الإجراءات السريعة">
     <div class="quick-menu-head"><strong>إجراء سريع</strong><span>ابدأ أي عملية من مكانك</span></div>
@@ -270,26 +272,30 @@
     <button data-modal="purchase"><span>🧾</span><b>فاتورة شراء</b></button>
     <button data-modal="expense"><span>💳</span><b>مصروف جديد</b></button>
   </div>
+
   <dialog id="commandDialog" class="command-dialog">
     <div class="command-box">
       <div class="command-head"><span>⌕</span><input id="commandSearch" placeholder="ابحث في الأقسام والعملاء والمنتجات والفواتير..." autocomplete="off"><kbd>Esc</kbd></div>
       <div id="commandResults" class="command-results"></div>
     </div>
   </dialog>
+
   <div id="toastZone" class="toast-zone"></div>
   <section id="printArea" class="print-area"></section>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/core.js?v=12.9" defer></script>
-<script src="assets/js/modules/orders.js?v=12.9" defer></script>
-<script src="assets/js/modules/products.js?v=12.9" defer></script>
-<script src="assets/js/modules/seller.js?v=12.9" defer></script>
-<script src="assets/js/modules/auth.js?v=12.9" defer></script>
-<script src="assets/js/modules/admin.js?v=12.9" defer></script>
-<script src="assets/js/modules/customers.js?v=12.9" defer></script>
-<script src="assets/js/modules/licenses.js?v=12.9" defer></script>
-<script src="assets/js/modules/reports.js?v=12.9" defer></script>
-<script src="assets/js/modules/settings.js?v=12.9" defer></script>
-<script src="assets/js/app.js?v=12.9" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/core.js?v=12.9" defer></script>
+  <script src="assets/js/modules/orders.js?v=12.9" defer></script>
+  <script src="assets/js/modules/products.js?v=12.9" defer></script>
+  <script src="assets/js/modules/seller.js?v=12.9" defer></script>
+  <script src="assets/js/modules/auth.js?v=12.9" defer></script>
+  <script src="assets/js/modules/admin.js?v=12.9" defer></script>
+  <script src="assets/js/modules/customers.js?v=12.9" defer></script>
+  <script src="assets/js/modules/licenses.js?v=12.9" defer></script>
+  <script src="assets/js/modules/reports.js?v=12.9" defer></script>
+  <script src="assets/js/modules/settings.js?v=12.9" defer></script>
+  <script src="assets/js/modules/reviews.js?v=13.0" defer></script>
+  <script src="assets/js/modules/order-flow.js?v=13.2" defer></script>
+  <script src="assets/js/app.js?v=12.9" defer></script>
 </body>
 </html>
