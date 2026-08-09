@@ -1,0 +1,5 @@
+عنوان Commit مقترح:
+Unify platform and WhatsApp order flow
+
+وصف مختصر:
+Save every checkout to NUVEXA HUB before WhatsApp, upsert buyer profiles without duplicates, and prevent duplicate order submissions.
