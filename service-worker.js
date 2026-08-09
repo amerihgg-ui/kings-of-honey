@@ -1,9 +1,10 @@
-/* NUVEXA HUB V14.0 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v14-storefront-visual';
+/* NUVEXA HUB V14.1 — cache refresh for order sync + reviews */
+const CACHE_NAME='nuvexa-hub-v14-1-about-story';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
   './assets/css/store-visual-v14.css?v=14.0',
+  './assets/css/about-story-v14-1.css?v=14.1',
   './assets/js/core.js?v=12.9',
   './assets/js/modules/auth.js?v=12.9',
   './assets/js/modules/admin.js?v=12.9',
@@ -19,6 +20,7 @@ const CORE=[
   './assets/js/modules/order-status-menu.js?v=13.4',
   './assets/js/app.js?v=12.9',
   './assets/js/modules/store-visual.js?v=14.0',
+  './assets/js/modules/about-story.js?v=14.1',
   './manifest.webmanifest?v=12.9',
   './favicon.ico?v=12.9',
   './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9',

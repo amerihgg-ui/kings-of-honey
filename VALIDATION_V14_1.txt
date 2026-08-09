@@ -1,0 +1,16 @@
+PASS — JS syntax — about-story.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — order-flow.js
+PASS — JS syntax — order-status-menu.js
+PASS — JS syntax — reviews.js
+PASS — JS syntax — service-worker.js
+PASS — index loads about story CSS
+PASS — index loads about story JS
+PASS — SW caches about story CSS
+PASS — SW caches about story JS
+PASS — 7 story chapters
+PASS — keeps aboutServices hook
+PASS — keeps project brief hook
+PASS — keeps replay intro hook
+PASS — uses only existing about asset names
+PASS — CSS braces balanced
