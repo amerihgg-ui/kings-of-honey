@@ -1,0 +1,30 @@
+NUVEXA HUB — CUSTOMER ACCOUNT LOGIN V14.2
+
+التحديث يغيّر شكل «حسابي / تسجيل الدخول» فقط.
+الأسلوب: Split Screen + Glassmorphism + Dark animated veil + هوية NUVEXA.
+
+لم ننسخ وظائف المثال:
+- لا Email/Password جديد.
+- لا Forgot Password.
+- لا Framer Motion.
+- لا ألوان Green.
+
+المحفوظ كما هو:
+- Google Login.
+- الدخول بالاسم ورقم الهاتف.
+- auth.js بدون تعديل.
+- بيانات المستخدم والطلبات.
+
+Desktop: هوية NUVEXA في جهة + لوحة دخول زجاجية في الجهة الأخرى.
+Mobile: الهوية فوق النموذج بتدرج رأسي.
+
+طريقة الرفع:
+1) فك الضغط.
+2) ارفع المحتويات بنفس المسارات فوق المشروع الحالي.
+3) Commit.
+4) Ctrl + F5 بعد النشر.
+
+لا يوجد SQL جديد.
+
+GitHub Commit:
+Redesign customer account login with NUVEXA split-screen glass UI

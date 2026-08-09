@@ -1,0 +1,9 @@
+PASS — index CSS
+PASS — index JS
+PASS — SW CSS
+PASS — SW JS
+PASS — Google hook preserved
+PASS — local toggle preserved
+PASS — local form preserved
+PASS — visual module no Supabase
+PASS — CSS braces balanced
