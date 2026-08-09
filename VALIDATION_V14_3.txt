@@ -1,0 +1,15 @@
+PASS — JS syntax — customer-account-visual.js
+PASS — JS syntax — customer-auth-visual.js
+PASS — JS syntax — order-flow.js
+PASS — JS syntax — order-status-menu.js
+PASS — JS syntax — service-worker.js
+PASS — index loads V14.3 CSS
+PASS — index loads V14.3 JS
+PASS — SW caches V14.3 CSS
+PASS — SW caches V14.3 JS
+PASS — Google hook still in index
+PASS — local login form still in index
+PASS — customer logout hook reused
+PASS — seller hook preserved
+PASS — visual module has no Supabase API
+PASS — CSS braces balanced

@@ -1,0 +1,808 @@
+/* ============================================================
+   NUVEXA HUB V14.3 — CUSTOMER ACCOUNT EXPERIENCE
+   Full visual layer for login + logged-in account.
+   No auth, orders, Supabase, inventory or accounting logic.
+   ============================================================ */
+
+/* Disable the older injected V14.2 brand block. */
+.nv-auth-brand-v142{display:none!important}
+
+@keyframes nv143Veil{
+  0%{transform:translate3d(-3%,-2%,0) scale(1.02) rotate(-1deg)}
+  50%{transform:translate3d(2.5%,3%,0) scale(1.08) rotate(.7deg)}
+  100%{transform:translate3d(-1%,4%,0) scale(1.045) rotate(-.3deg)}
+}
+@keyframes nv143InLeft{
+  from{opacity:0;transform:translateX(-28px)}
+  to{opacity:1;transform:none}
+}
+@keyframes nv143InRight{
+  from{opacity:0;transform:translateX(26px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+@keyframes nv143InUp{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:none}
+}
+
+/* ============================================================
+   LOGIN / ACCOUNT ENTRY
+   ============================================================ */
+#customerAuthDialog.store-dialog{
+  padding:0!important;
+  margin:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+}
+#customerAuthDialog::backdrop{
+  background:
+    radial-gradient(circle at 18% 20%,rgba(24,151,255,.12),transparent 34%),
+    radial-gradient(circle at 83% 79%,rgba(228,165,51,.07),transparent 32%),
+    rgba(1,5,10,.88)!important;
+  backdrop-filter:blur(14px);
+}
+
+#customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"]{
+  position:relative!important;
+  width:min(1180px,calc(100vw - 36px))!important;
+  height:min(730px,calc(100vh - 36px))!important;
+  min-height:610px!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(400px,455px)!important;
+  direction:ltr!important;
+  border-radius:26px!important;
+  border:1px solid rgba(150,213,255,.14)!important;
+  background:#030912!important;
+  box-shadow:0 38px 110px rgba(0,0,0,.68),0 0 0 1px rgba(255,255,255,.018) inset!important;
+}
+#customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"]::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:-22%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 15% 26%,rgba(19,148,255,.32),transparent 28%),
+    radial-gradient(ellipse at 52% 72%,rgba(67,192,255,.13),transparent 30%),
+    radial-gradient(ellipse at 86% 18%,rgba(226,164,53,.10),transparent 24%);
+  filter:blur(42px) saturate(1.08);
+  animation:nv143Veil 14s ease-in-out infinite alternate;
+}
+#customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"]::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  opacity:.10;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:54px 54px;
+  mask-image:linear-gradient(90deg,black 0%,rgba(0,0,0,.55) 56%,transparent 92%);
+}
+
+#customerAuthDialog .store-dialog-head{
+  position:absolute!important;
+  z-index:30!important;
+  top:17px!important;
+  right:17px!important;
+  width:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#customerAuthDialog .store-dialog-head>span{display:none!important}
+#customerAuthDialog .store-dialog-head button{
+  width:42px!important;
+  height:42px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.11)!important;
+  background:rgba(2,10,18,.60)!important;
+  color:#e6f3fb!important;
+  backdrop-filter:blur(14px);
+  transition:transform .18s ease,border-color .18s ease,background .18s ease;
+}
+#customerAuthDialog .store-dialog-head button:hover{
+  transform:translateY(-1px);
+  border-color:rgba(104,201,255,.30)!important;
+  background:rgba(7,22,35,.82)!important;
+}
+
+.nv-auth-brand-v143{
+  position:relative;
+  z-index:2;
+  min-width:0;
+  padding:clamp(38px,5vw,68px);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  direction:rtl;
+  overflow:hidden;
+  animation:nv143InLeft .52s cubic-bezier(.2,.75,.22,1) both;
+}
+.nv-auth-brand-v143::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:0;right:0;bottom:0;
+  width:46%;
+  background:linear-gradient(90deg,transparent,rgba(3,9,18,.80));
+}
+.nv-auth-brand-kicker-v143{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#8fa7b8;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.nv-auth-brand-kicker-v143 i{
+  width:7px;height:7px;border-radius:50%;
+  background:#2dc884;
+  box-shadow:0 0 15px rgba(45,200,132,.62);
+}
+.nv-auth-wordmark-v143{
+  margin:auto 0;
+  padding:38px 0;
+}
+.nv-auth-wordmark-v143 img{
+  width:184px;
+  max-height:62px;
+  object-fit:contain;
+  object-position:right center;
+}
+.nv-auth-wordmark-v143 h1{
+  margin:27px 0 15px;
+  max-width:660px;
+  color:#f7fbfe;
+  font-size:clamp(46px,5.8vw,80px);
+  line-height:.99;
+  letter-spacing:-2px;
+  font-weight:900;
+  text-wrap:balance;
+}
+.nv-auth-wordmark-v143 h1 span{
+  display:block;
+  margin-top:8px;
+  color:transparent;
+  background:linear-gradient(90deg,#f9fdff 8%,#78cffd 57%,#e7b44e);
+  -webkit-background-clip:text;
+  background-clip:text;
+}
+.nv-auth-wordmark-v143 p{
+  max-width:560px;
+  margin:0;
+  color:#9db1c0;
+  font-size:13px;
+  line-height:1.9;
+}
+.nv-auth-wordmark-line-v143{
+  width:min(520px,80%);
+  height:1px;
+  margin-top:26px;
+  background:linear-gradient(90deg,rgba(107,200,255,.48),rgba(228,173,64,.22),transparent);
+}
+.nv-auth-brand-foot-v143{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  color:#70879a;
+  font-size:9px;
+}
+.nv-auth-brand-foot-v143 b{color:#9ab0c1;font-weight:750}
+
+#customerAuthDialog .customer-auth-body{
+  position:relative!important;
+  z-index:4!important;
+  min-width:0!important;
+  margin:18px 18px 18px 0!important;
+  padding:clamp(32px,3.8vw,48px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  direction:rtl!important;
+  overflow:auto!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:22px!important;
+  background:linear-gradient(145deg,rgba(10,24,39,.79),rgba(5,14,25,.67))!important;
+  box-shadow:0 24px 65px rgba(0,0,0,.30),0 1px 0 rgba(255,255,255,.022) inset!important;
+  backdrop-filter:blur(28px) saturate(1.10);
+  animation:nv143InRight .56s .04s cubic-bezier(.2,.75,.22,1) both;
+}
+#customerAuthDialog .customer-auth-body::before{
+  content:"";
+  position:absolute;
+  top:0;right:24px;left:24px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(111,202,255,.44),rgba(228,174,65,.28),transparent);
+}
+#customerAuthDialog .customer-auth-logo{
+  width:128px!important;
+  max-height:42px!important;
+  margin:0 0 30px auto!important;
+  object-fit:contain!important;
+  object-position:right center!important;
+}
+#customerAuthDialog .customer-auth-body h2{
+  margin:0!important;
+  color:#f5f9fc!important;
+  font-size:clamp(29px,3vw,40px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.45px!important;
+}
+#customerAuthDialog .customer-auth-body>p{
+  margin:12px 0 26px!important;
+  color:#91a6b7!important;
+  font-size:12px!important;
+  line-height:1.8!important;
+}
+#customerAuthDialog .social-btn.google{
+  width:100%!important;
+  min-height:54px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  background:rgba(255,255,255,.055)!important;
+  color:#f5f9fc!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:12px!important;
+  font-weight:900!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.16)!important;
+  transition:.18s ease!important;
+}
+#customerAuthDialog .social-btn.google:hover{
+  transform:translateY(-2px)!important;
+  border-color:rgba(105,199,255,.28)!important;
+  background:rgba(255,255,255,.08)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.23),0 0 26px rgba(22,151,255,.05)!important;
+}
+#customerAuthDialog .oauth-icon{
+  width:31px!important;height:31px!important;
+  display:grid!important;place-items:center!important;
+  border-radius:9px!important;
+  background:#fff!important;color:#151515!important;font-weight:950!important;
+}
+#customerAuthDialog .auth-privacy-note{
+  margin:11px 0 0!important;
+  padding:0!important;
+  justify-content:center!important;
+  border:0!important;
+  background:transparent!important;
+  color:#6f8496!important;
+  font-size:9px!important;
+}
+#customerAuthDialog .store-divider{
+  margin:23px 0 18px!important;
+  color:#6e8497!important;
+  font-size:9px!important;
+}
+#customerAuthDialog .auth-local-toggle{
+  width:100%!important;
+  min-height:50px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(94,190,250,.15)!important;
+  background:rgba(21,151,255,.05)!important;
+  color:#bbe4fd!important;
+  font-weight:900!important;
+}
+#customerAuthDialog .local-login-panel{margin-top:18px!important}
+#customerAuthDialog .local-login-panel .field label{
+  color:#7f95a7!important;
+  font-size:9px!important;
+}
+#customerAuthDialog .local-login-panel .field input{
+  min-height:43px!important;
+  padding:5px 1px 8px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(156,205,238,.18)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#edf7fd!important;
+  box-shadow:none!important;
+}
+#customerAuthDialog .local-login-panel .field input:focus{
+  border-bottom-color:#5abfff!important;
+  box-shadow:0 1px 0 rgba(90,191,255,.16)!important;
+}
+#customerAuthDialog .local-login-panel .btn.btn-gold{
+  min-height:50px!important;
+  border-radius:13px!important;
+}
+
+/* ============================================================
+   LOGGED-IN ACCOUNT
+   ============================================================ */
+#customerAccountDialog.store-dialog{
+  padding:0!important;
+  margin:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  background:transparent!important;
+  border:0!important;
+  overflow:visible!important;
+}
+#customerAccountDialog::backdrop{
+  background:
+    radial-gradient(circle at 17% 20%,rgba(22,151,255,.12),transparent 34%),
+    radial-gradient(circle at 84% 78%,rgba(228,165,51,.065),transparent 34%),
+    rgba(1,5,10,.88)!important;
+  backdrop-filter:blur(14px);
+}
+#customerAccountDialogContent[data-nv-account-visual="14.3"]{
+  position:relative!important;
+  width:min(1200px,calc(100vw - 36px))!important;
+  height:min(750px,calc(100vh - 36px))!important;
+  min-height:620px!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-columns:315px minmax(0,1fr)!important;
+  direction:ltr!important;
+  border:1px solid rgba(148,211,255,.14)!important;
+  border-radius:26px!important;
+  background:#030912!important;
+  box-shadow:0 38px 110px rgba(0,0,0,.68),0 0 0 1px rgba(255,255,255,.018) inset!important;
+}
+#customerAccountDialogContent[data-nv-account-visual="14.3"]::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:-24%;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 10% 24%,rgba(21,151,255,.28),transparent 27%),
+    radial-gradient(ellipse at 63% 75%,rgba(66,188,255,.11),transparent 31%),
+    radial-gradient(ellipse at 88% 14%,rgba(228,166,55,.08),transparent 23%);
+  filter:blur(46px);
+  animation:nv143Veil 16s ease-in-out infinite alternate;
+}
+#customerAccountDialogContent[data-nv-account-visual="14.3"]::after{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:0;
+  pointer-events:none;
+  opacity:.085;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
+  background-size:54px 54px;
+  mask-image:linear-gradient(90deg,black,rgba(0,0,0,.25),transparent 88%);
+}
+#customerAccountDialogContent>.store-dialog-head{
+  position:absolute!important;
+  z-index:30!important;
+  top:17px!important;
+  right:17px!important;
+  width:auto!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+#customerAccountDialogContent>.store-dialog-head h3{display:none!important}
+#customerAccountDialogContent>.store-dialog-head button{
+  width:42px!important;height:42px!important;
+  display:grid!important;place-items:center!important;
+  padding:0!important;
+  border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.11)!important;
+  background:rgba(3,12,21,.58)!important;
+  color:#e5f1f8!important;
+  backdrop-filter:blur(14px);
+}
+
+.nv-account-side-v143{
+  position:relative;
+  z-index:3;
+  min-width:0;
+  padding:32px 27px 27px;
+  display:flex;
+  flex-direction:column;
+  direction:rtl;
+  border-right:1px solid rgba(255,255,255,.055);
+  background:linear-gradient(180deg,rgba(8,22,35,.47),rgba(3,11,20,.65));
+  animation:nv143InLeft .5s ease both;
+}
+.nv-account-side-logo-v143{
+  width:148px;
+  max-height:48px;
+  object-fit:contain;
+  object-position:right center;
+}
+.nv-account-side-kicker-v143{
+  margin-top:32px;
+  color:#70889a;
+  font-size:9px;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  font-weight:850;
+}
+.nv-account-avatar-wrap-v143{margin-top:16px}
+.nv-account-avatar-wrap-v143 .customer-account-avatar,
+.nv-account-avatar-wrap-v143 .customer-account-fallback{
+  width:80px!important;height:80px!important;
+  display:grid!important;place-items:center!important;
+  border-radius:21px!important;
+  object-fit:cover!important;
+  border:1px solid rgba(118,204,255,.22)!important;
+  background:rgba(255,255,255,.04)!important;
+  box-shadow:0 16px 34px rgba(0,0,0,.23),0 0 24px rgba(22,151,255,.06)!important;
+}
+.nv-account-side-v143 h2{
+  margin:16px 0 0;
+  color:#f3f9fd;
+  font-size:25px;
+  line-height:1.15;
+}
+.nv-account-meta-v143{
+  margin-top:9px;
+  display:grid;
+  gap:6px;
+  color:#8fa4b5;
+  font-size:10px;
+  line-height:1.55;
+  word-break:break-word;
+}
+.nv-account-meta-v143 span{
+  display:block;
+  padding-bottom:6px;
+  border-bottom:1px solid rgba(255,255,255,.055);
+}
+.nv-account-side-rule-v143{
+  height:1px;
+  margin:23px 0 17px;
+  background:linear-gradient(90deg,rgba(83,188,255,.34),rgba(230,175,69,.18),transparent);
+}
+.nv-account-side-nav-v143{display:grid;gap:4px}
+.nv-account-side-nav-v143 span{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:41px;
+  padding:0 11px;
+  border:1px solid transparent;
+  border-radius:9px;
+  color:#8da2b3;
+  font-size:10px;
+}
+.nv-account-side-nav-v143 span.active{
+  color:#e7f6ff;
+  border-color:rgba(94,192,251,.12);
+  background:rgba(21,151,255,.055);
+}
+.nv-account-side-nav-v143 b{font-size:9px;color:#6fc9ff}
+.nv-account-side-actions-v143{margin-top:auto;padding-top:22px}
+.nv-account-side-actions-v143 .btn{
+  width:100%!important;
+  min-height:44px!important;
+  border-radius:11px!important;
+}
+
+#customerAccountDialogContent>.store-dialog-body{
+  position:relative!important;
+  z-index:4!important;
+  min-width:0!important;
+  margin:18px 18px 18px 0!important;
+  padding:clamp(28px,3vw,42px)!important;
+  overflow:auto!important;
+  direction:rtl!important;
+  border:1px solid rgba(255,255,255,.085)!important;
+  border-radius:22px!important;
+  background:linear-gradient(145deg,rgba(9,23,37,.78),rgba(5,14,24,.67))!important;
+  box-shadow:0 24px 64px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(26px) saturate(1.08);
+  animation:nv143InRight .54s .04s ease both;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(91,185,246,.26) transparent;
+}
+#customerAccountDialogContent .customer-account-head{display:none!important}
+.nv-account-main-head-v143{
+  padding:3px 50px 24px 0;
+  border-bottom:1px solid rgba(255,255,255,.065);
+}
+.nv-account-main-head-v143 span{
+  color:#6dc8ff;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.nv-account-main-head-v143 h1{
+  margin:8px 0 8px;
+  color:#f5f9fc;
+  font-size:clamp(30px,3.3vw,44px);
+  line-height:1.06;
+  letter-spacing:-.6px;
+}
+.nv-account-main-head-v143 p{
+  max-width:650px;
+  margin:0;
+  color:#8fa4b4;
+  font-size:11px;
+  line-height:1.75;
+}
+.nv-account-overview-v143{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  border-bottom:1px solid rgba(255,255,255,.065);
+}
+.nv-account-stat-v143{
+  min-height:106px;
+  padding:23px 17px 19px;
+}
+.nv-account-stat-v143:not(:last-child){border-left:1px solid rgba(255,255,255,.065)}
+.nv-account-stat-v143 small{display:block;color:#6f8799;font-size:9px;letter-spacing:.06em}
+.nv-account-stat-v143 strong{display:block;margin-top:7px;color:#edf8ff;font-size:25px;line-height:1}
+.nv-account-stat-v143 em{display:block;margin-top:8px;color:#8ba2b4;font-style:normal;font-size:9px}
+.nv-account-stat-v143:first-child strong{color:#79d1ff}
+.nv-account-stat-v143:nth-child(2) strong{color:#e5bd63}
+.nv-account-stat-v143:nth-child(3) strong{color:#6edaa8}
+
+.nv-account-section-v143{
+  padding:27px 0 8px;
+  border-bottom:1px solid rgba(255,255,255,.065);
+}
+.nv-account-section-head-v143{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:10px;
+}
+.nv-account-section-head-v143 small{
+  color:#70889a;
+  font-size:9px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.nv-account-section-head-v143 h2{
+  margin:5px 0 0;
+  color:#eef7fd;
+  font-size:21px;
+}
+.nv-account-section-head-v143 b{color:#7890a3;font-size:9px;font-weight:750}
+.nv-account-rows-v143{display:grid}
+.nv-account-section-v143 .total-line{
+  min-height:63px!important;
+  margin:0!important;
+  padding:14px 2px!important;
+  border:0!important;
+  border-top:1px solid rgba(255,255,255,.052)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#a8bbc9!important;
+  transition:background .16s ease,padding .16s ease!important;
+}
+.nv-account-section-v143 .total-line:hover{
+  padding-inline:10px!important;
+  background:rgba(255,255,255,.018)!important;
+}
+.nv-account-section-v143 .total-line span{color:#c6d6e1!important;font-size:11px!important}
+.nv-account-section-v143 .total-line strong{color:#f2c660!important;font-size:13px!important}
+.nv-account-section-v143 .license-key{
+  max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#76cfff!important;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:9px!important;
+}
+.nv-account-empty-v143{
+  margin:0!important;
+  padding:20px 0 24px!important;
+  color:#758c9d!important;
+  font-size:11px!important;
+  line-height:1.7!important;
+}
+
+#customerAccountDialogContent .seller-join-card{
+  margin:26px 0 0!important;
+  padding:25px 0 4px!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:end!important;
+  gap:20px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#customerAccountDialogContent .seller-join-card>div>span{
+  color:#e5b650!important;
+  font-size:9px!important;
+  letter-spacing:.12em!important;
+}
+#customerAccountDialogContent .seller-join-card h3{
+  margin:7px 0 6px!important;
+  color:#eef8fd!important;
+  font-size:19px!important;
+}
+#customerAccountDialogContent .seller-join-card p{
+  max-width:610px!important;
+  margin:0!important;
+  color:#8399aa!important;
+  font-size:10px!important;
+  line-height:1.7!important;
+}
+#customerAccountDialogContent .seller-join-card .btn{
+  min-height:44px!important;
+  border-radius:11px!important;
+  white-space:nowrap!important;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(max-width:860px){
+  #customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"]{
+    width:min(650px,calc(100vw - 14px))!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100vh - 14px)!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:minmax(235px,.68fr) auto!important;
+    overflow:auto!important;
+    border-radius:21px!important;
+  }
+  #customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"]::after{
+    mask-image:linear-gradient(to bottom,black,rgba(0,0,0,.25),transparent 60%);
+  }
+  .nv-auth-brand-v143{
+    min-height:260px;
+    padding:27px 21px 33px;
+    justify-content:flex-end;
+    background:linear-gradient(0deg,rgba(4,12,22,.95),rgba(4,12,22,.16));
+  }
+  .nv-auth-brand-kicker-v143,.nv-auth-brand-foot-v143{display:none}
+  .nv-auth-wordmark-v143{margin:0;padding:0}
+  .nv-auth-wordmark-v143 img{width:158px;max-height:51px}
+  .nv-auth-wordmark-v143 h1{
+    margin:14px 0 8px;
+    max-width:500px;
+    font-size:clamp(31px,9vw,47px);
+    letter-spacing:-.8px;
+  }
+  .nv-auth-wordmark-v143 p{font-size:10px;line-height:1.66}
+  .nv-auth-wordmark-line-v143{margin-top:16px}
+  #customerAuthDialog .customer-auth-body{
+    margin:0!important;
+    padding:28px 20px 25px!important;
+    border:0!important;
+    border-top:1px solid rgba(255,255,255,.07)!important;
+    border-radius:0!important;
+    background:linear-gradient(180deg,rgba(7,20,32,.97),rgba(3,11,20,.99))!important;
+    backdrop-filter:none!important;
+  }
+  #customerAuthDialog .customer-auth-logo{display:none!important}
+
+  #customerAccountDialogContent[data-nv-account-visual="14.3"]{
+    width:min(680px,calc(100vw - 12px))!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(100vh - 12px)!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    overflow:auto!important;
+    border-radius:21px!important;
+  }
+  .nv-account-side-v143{
+    min-height:auto;
+    padding:23px 20px 19px;
+    border-right:0;
+    border-bottom:1px solid rgba(255,255,255,.065);
+  }
+  .nv-account-side-logo-v143{width:128px;max-height:42px}
+  .nv-account-side-kicker-v143{margin-top:18px}
+  .nv-account-side-profile-v143{
+    display:grid;
+    grid-template-columns:61px minmax(0,1fr);
+    gap:13px;
+    align-items:center;
+    margin-top:12px;
+  }
+  .nv-account-avatar-wrap-v143{margin:0}
+  .nv-account-avatar-wrap-v143 .customer-account-avatar,
+  .nv-account-avatar-wrap-v143 .customer-account-fallback{
+    width:61px!important;height:61px!important;border-radius:16px!important;
+  }
+  .nv-account-side-v143 h2{margin:0;font-size:20px}
+  .nv-account-meta-v143{margin-top:4px;gap:2px}
+  .nv-account-meta-v143 span{padding:0;border:0}
+  .nv-account-side-rule-v143,.nv-account-side-nav-v143{display:none}
+  .nv-account-side-actions-v143{
+    position:absolute;
+    top:19px;
+    left:61px;
+    margin:0;
+    padding:0;
+  }
+  .nv-account-side-actions-v143 .btn{
+    width:auto!important;
+    min-height:37px!important;
+    padding-inline:11px!important;
+    font-size:9px!important;
+  }
+  #customerAccountDialogContent>.store-dialog-body{
+    margin:0!important;
+    padding:26px 18px 27px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:linear-gradient(180deg,rgba(7,20,32,.97),rgba(3,11,20,.99))!important;
+    overflow:visible!important;
+    backdrop-filter:none!important;
+  }
+  .nv-account-main-head-v143{padding:2px 42px 21px 0}
+  .nv-account-main-head-v143 h1{font-size:29px}
+  .nv-account-overview-v143{grid-template-columns:repeat(3,1fr)}
+  .nv-account-stat-v143{min-height:88px;padding:18px 9px 15px}
+  .nv-account-stat-v143 strong{font-size:21px}
+  #customerAccountDialogContent .seller-join-card{
+    grid-template-columns:1fr!important;
+    align-items:start!important;
+  }
+  #customerAccountDialogContent .seller-join-card .btn{width:100%!important}
+}
+
+@media(max-width:470px){
+  #customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"],
+  #customerAccountDialogContent[data-nv-account-visual="14.3"]{
+    width:calc(100vw - 8px)!important;
+    max-height:calc(100vh - 8px)!important;
+    border-radius:17px!important;
+  }
+  .nv-auth-brand-v143{min-height:225px;padding:21px 16px 26px}
+  .nv-auth-wordmark-v143 img{width:140px}
+  .nv-auth-wordmark-v143 h1{font-size:28px}
+  #customerAuthDialog .customer-auth-body{padding:24px 16px 22px!important}
+  #customerAuthDialog .customer-auth-body h2{font-size:26px!important}
+
+  .nv-account-side-v143{padding:20px 15px 16px}
+  .nv-account-side-actions-v143{left:51px}
+  #customerAccountDialogContent>.store-dialog-body{padding:23px 14px 24px!important}
+  .nv-account-main-head-v143{padding-right:38px}
+  .nv-account-overview-v143{grid-template-columns:1fr}
+  .nv-account-stat-v143{
+    min-height:auto;
+    padding:14px 3px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:4px 12px;
+  }
+  .nv-account-stat-v143:not(:last-child){border-left:0;border-bottom:1px solid rgba(255,255,255,.055)}
+  .nv-account-stat-v143 small{grid-column:1}
+  .nv-account-stat-v143 strong{grid-column:2;grid-row:1/3}
+  .nv-account-stat-v143 em{grid-column:1;margin-top:1px}
+  .nv-account-section-head-v143{align-items:start}
+  .nv-account-section-v143 .license-key{max-width:46%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #customerAuthDialog .customer-auth-card[data-nv-auth-visual="14.3"]::before,
+  #customerAccountDialogContent[data-nv-account-visual="14.3"]::before,
+  .nv-auth-brand-v143,
+  #customerAuthDialog .customer-auth-body,
+  .nv-account-side-v143,
+  #customerAccountDialogContent>.store-dialog-body{
+    animation:none!important;
+  }
+}
