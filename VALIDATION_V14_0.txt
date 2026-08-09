@@ -1,0 +1,13 @@
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — order-flow.js
+PASS — JS syntax — order-status-menu.js
+PASS — JS syntax — reviews.js
+PASS — JS syntax — service-worker.js
+PASS — index loads visual CSS
+PASS — index loads visual JS
+PASS — service worker caches visual CSS
+PASS — service worker caches visual JS
+PASS — footer markup included
+PASS — benefits markup included
+PASS — visual JS has no Supabase calls
+PASS — CSS braces balanced

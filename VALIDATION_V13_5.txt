@@ -1,0 +1,7 @@
+PASS — uses payment_status variable
+PASS — paid enum cast
+PASS — pending enum cast
+PASS — partial enum cast
+PASS — refunded enum cast
+PASS — no text CASE assigned to invoice status
+PASS — front-end order status JS still present
