@@ -1,5 +1,5 @@
-/* NUVEXA HUB V13.3 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v13-3-accounting-rls';
+/* NUVEXA HUB V13.4 — cache refresh for order sync + reviews */
+const CACHE_NAME='nuvexa-hub-v13-4-order-status-picker';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
@@ -15,6 +15,7 @@ const CORE=[
   './assets/js/modules/seller.js?v=12.9',
   './assets/js/modules/reviews.js?v=13.0',
   './assets/js/modules/order-flow.js?v=13.3',
+  './assets/js/modules/order-status-menu.js?v=13.4',
   './assets/js/app.js?v=12.9',
   './manifest.webmanifest?v=12.9',
   './favicon.ico?v=12.9',
