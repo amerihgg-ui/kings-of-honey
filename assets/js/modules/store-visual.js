@@ -216,7 +216,7 @@
     const content=$('#storeContent');
     if(content){
       const observer=new MutationObserver(scheduleEnhance);
-      observer.observe(content,{childList:true,subtree:true});
+      observer.observe(content,{childList:true,subtree:false});
     }
 
     window.addEventListener('scroll',updateHeaderAndBackTop,{passive:true});

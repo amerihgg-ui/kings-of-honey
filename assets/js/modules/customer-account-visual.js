@@ -3,7 +3,7 @@
 */
 (()=>{'use strict';
 
-  const VERSION='14.3';
+  const VERSION='14.3.1';
   let authBusy=false;
   let accountBusy=false;
 
@@ -183,10 +183,6 @@
     installAuth();
     installAccount();
 
-    const auth=$('#customerAuthDialog');
-    if(auth){
-      new MutationObserver(()=>installAuth()).observe(auth,{childList:true,subtree:true});
-    }
 
     const account=$('#customerAccountDialogContent');
     if(account){
@@ -198,7 +194,7 @@
 
     document.addEventListener('click',event=>{
       if(event.target.closest('[data-action="customer-account"]')){
-        setTimeout(()=>{installAuth();installAccount()},60);
+        setTimeout(()=>{installAuth();installAccount()},90);
       }
     },true);
 

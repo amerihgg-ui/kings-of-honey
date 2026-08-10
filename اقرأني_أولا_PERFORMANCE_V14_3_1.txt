@@ -1,0 +1,37 @@
+NUVEXA HUB — PERFORMANCE HOTFIX V14.3.1
+
+سبب المشكلة:
+كان يتم تحميل customer-auth-visual.js V14.2 مع customer-account-visual.js V14.3 في نفس الوقت.
+
+V14.2:
+- يضيف عنصر nv-auth-brand-v142.
+- يراقب نافذة تسجيل الدخول بـ MutationObserver.
+
+V14.3:
+- يحذف nv-auth-brand-v142.
+- يضيف nv-auth-brand-v143.
+
+النتيجة:
+V14.2 يعيد العنصر -> V14.3 يحذفه -> V14.2 يعيده...
+وهذا يسبب DOM loop واستهلاكًا مستمرًا للمعالج، لذلك الموقع قد يصبح ثقيلًا أو يبدو أنه يظل يحمل.
+
+ما تم عمله في V14.3.1:
+1) إيقاف تحميل V14.2 القديم بالكامل.
+2) V14.3.1 وحده مسؤول عن تصميم تسجيل الدخول والحساب.
+3) إزالة MutationObserver غير الضروري من نافذة تسجيل الدخول.
+4) الإبقاء فقط على مراقبة حساب العميل لأنه يُعاد بناؤه عند فتحه.
+5) تخفيف مراقبة storeContent من subtree كامل إلى direct children فقط.
+6) إيقاف تحميل About Story V14.1 مؤقتًا لأننا اتفقنا أن نؤجل تصميم «من نحن».
+7) تغيير Service Worker cache لتطهير النسخ القديمة.
+8) لا يوجد SQL جديد.
+9) لا تعديل على Google Login أو الطلبات أو Supabase.
+
+طريقة الرفع:
+- ارفع محتويات هذه الحزمة فوق المشروع الحالي بنفس المسارات.
+- Commit.
+- انتظر GitHub Pages.
+- أغلق تبويب الموقع بالكامل وافتحه من جديد.
+- اعمل Ctrl + Shift + R مرة واحدة.
+
+Commit:
+Fix account visual DOM loop and improve storefront performance

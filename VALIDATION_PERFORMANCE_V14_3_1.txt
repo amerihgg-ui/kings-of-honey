@@ -1,0 +1,16 @@
+PASS — JS syntax — customer-account-visual.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — order-flow.js
+PASS — JS syntax — order-status-menu.js
+PASS — JS syntax — service-worker.js
+PASS — V14.2 auth JS NOT loaded
+PASS — V14.2 auth CSS NOT loaded
+PASS — About V14.1 JS paused
+PASS — About V14.1 CSS paused
+PASS — Account V14.3.1 loaded
+PASS — Account CSS V14.3.1 loaded
+PASS — No auth MutationObserver in account visual
+PASS — Store observer direct-child only
+PASS — New SW cache name
+PASS — SW excludes V14.2
+PASS — SW excludes About V14.1
