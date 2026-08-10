@@ -1,0 +1,19 @@
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — service-worker.js
+PASS — V14.7 CSS loaded
+PASS — V14.7 JS loaded
+PASS — V14.6 not loaded
+PASS — Body scroll lock present
+PASS — Store header hidden in About
+PASS — Bottom nav hidden in About
+PASS — Logo-only first scene
+PASS — Wheel handler passive false
+PASS — Touch navigation present
+PASS — Keyboard navigation present
+PASS — No MutationObserver
+PASS — No Supabase calls
+PASS — Scene count 11
+PASS — CSS braces balanced
+PASS — SW cache bumped
