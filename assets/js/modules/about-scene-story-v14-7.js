@@ -3,7 +3,7 @@
 */
 (()=>{'use strict';
 
-  const VERSION='14.7';
+  const VERSION='14.7.1';
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
@@ -34,8 +34,6 @@
       <article class="about-page nx47-about" aria-label="من نحن — NUVEXA HUB">
         <div class="nx47-grid" aria-hidden="true"></div>
         <div class="nx47-wipe" aria-hidden="true"></div>
-
-        <button type="button" class="nx47-exit" data-nx47-exit aria-label="العودة إلى المتجر" title="العودة إلى المتجر">⌂</button>
 
         <nav class="nx47-progress" aria-label="مشاهد من نحن">
           <span class="nx47-progress-label">STORY</span>
@@ -376,6 +374,20 @@
     }
   }
 
+  function syncHeaderHeight(){
+    const page=$('#storePage');
+    const header=page?.querySelector(':scope > .store-header');
+    if(!page||!header)return;
+    const height=Math.max(0,Math.round(header.getBoundingClientRect().height));
+    if(height)page.style.setProperty('--nx47-header-h',`${height}px`);
+  }
+
+  function markAboutActive(active){
+    $$('.store-about-entry,[data-action="store-about"]').forEach(button=>{
+      button.classList.toggle('active',!!active);
+    });
+  }
+
   function openAbout(){
     const page=$('#storePage');
     const content=$('#storeContent');
@@ -384,6 +396,8 @@
     content.innerHTML=markup();
     document.body.classList.add('nx47-about-open');
     page.classList.remove('nv-store-v14-home');
+    syncHeaderHeight();
+    markAboutActive(true);
 
     aboutOpen=true;
     current=0;
@@ -396,6 +410,7 @@
     if(!aboutOpen)return;
     aboutOpen=false;
     document.body.classList.remove('nx47-about-open');
+    markAboutActive(false);
 
     // Use the site's existing home action to rebuild the storefront.
     const home=$('[data-action="store-home"]');
@@ -405,6 +420,7 @@
   function goProducts(){
     aboutOpen=false;
     document.body.classList.remove('nx47-about-open');
+    markAboutActive(false);
 
     const home=$('[data-action="store-home"]');
     if(!home)return;
@@ -424,6 +440,7 @@
 
   function boot(){
     document.addEventListener('wheel',wheelHandler,{passive:false});
+    window.addEventListener('resize',()=>{if(aboutOpen)syncHeaderHeight()},{passive:true});
     document.addEventListener('touchstart',touchStart,{passive:true});
     document.addEventListener('touchend',touchEnd,{passive:true});
     document.addEventListener('keydown',keyHandler);
@@ -444,11 +461,6 @@
         return;
       }
 
-      if(event.target.closest('[data-nx47-exit]')){
-        event.preventDefault();
-        closeAbout();
-        return;
-      }
 
       if(event.target.closest('[data-nx47-products]')){
         event.preventDefault();
@@ -456,10 +468,20 @@
         return;
       }
 
+      // The original header remains live. Clicking its logo/home must release
+      // the fixed-scene mode before the app rebuilds the storefront.
+      if(aboutOpen&&event.target.closest('[data-action="store-home"]')){
+        aboutOpen=false;
+        document.body.classList.remove('nx47-about-open');
+        markAboutActive(false);
+        return;
+      }
+
       // If another app action moves away from About, release the body lock.
       if(aboutOpen&&event.target.closest('[data-action="customer-account"],[data-action="store-cart"],[data-action="admin-access"],[data-action="seller-access"]')){
         aboutOpen=false;
         document.body.classList.remove('nx47-about-open');
+        markAboutActive(false);
       }
     },true);
 

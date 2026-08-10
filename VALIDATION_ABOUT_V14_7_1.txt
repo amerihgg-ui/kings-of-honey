@@ -1,0 +1,17 @@
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — service-worker.js
+PASS — Header is explicitly kept visible
+PASS — Cinematic hero hidden only in About
+PASS — About viewport subtracts header
+PASS — Mobile header fallback 182px
+PASS — Header height sync JS
+PASS — No extra exit button
+PASS — Home header releases body lock
+PASS — No MutationObserver
+PASS — No Supabase calls
+PASS — V14.7.1 CSS cache bust
+PASS — V14.7.1 JS cache bust
+PASS — New service worker cache
+PASS — CSS braces balanced
