@@ -1,0 +1,23 @@
+PASS — JS syntax — factory-reset-v15-1.js
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — service-worker.js
+PASS — Factory reset loads after app.js
+PASS — Owner-only client gate
+PASS — Server RPC invoked
+PASS — No client-side business delete attempts
+PASS — Local state is completely replaced
+PASS — Orders zero
+PASS — Customers zero
+PASS — Sales invoices zero
+PASS — Accounts zero
+PASS — Server owner email check
+PASS — Security definer RPC
+PASS — Server marker table
+PASS — Marker written after verification
+PASS — Profiles protected
+PASS — User roles protected
+PASS — All non-protected public tables targeted
+PASS — Storage product media deleted
+PASS — SW cache bumped
+PASS — SW caches factory reset
