@@ -1,0 +1,23 @@
+PASS — JS syntax — data-reset-v14-9.js
+PASS — JS syntax — data-reset-hard-v14-9-1.js
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — service-worker.js
+PASS — Old local reset still before app
+PASS — Hard cloud reset after app
+PASS — Uses actual auth client
+PASS — Reads actual cloud platform state
+PASS — Writes actual cloud platform state
+PASS — Cloud one-time marker present
+PASS — Business arrays explicitly zeroed
+PASS — Accounts explicitly zeroed
+PASS — Counters explicitly zeroed
+PASS — SQL protects profiles
+PASS — SQL protects user_roles
+PASS — SQL builds FK protection closure
+PASS — SQL targets all remaining public tables
+PASS — SQL verifies all target tables zero
+PASS — SQL safety rollback guard
+PASS — SQL deletes product media
+PASS — SW cache bumped
+PASS — SW caches hard reset

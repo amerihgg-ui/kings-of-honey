@@ -1,0 +1,83 @@
+NUVEXA HUB — HARD CLEAN START V14.9.1
+
+سبب أن V14.9 لم يُظهر كل الأرقام = صفر:
+app.js بعد تسجيل دخول صاحب المنصة يقوم بتحميل Cloud Platform State من Supabase.
+إذا كانت الحالة السحابية القديمة تحتوي على أرقام تجريبية، فإنها ترجع إلى لوحة الإدارة حتى لو تم مسح Local Storage.
+
+V14.9.1 يعالج الناحيتين:
+
+A) SQL HARD CLEAN
+الملف:
+RUN_ONCE_HARD_CLEAN_V14_9_1.sql
+
+يمسح كل جداول التشغيل داخل public schema، وليس قائمة أسماء محدودة فقط.
+
+يحمي:
+- auth.users — لا يلمسه أصلًا.
+- public.profiles
+- public.user_roles
+- جداول الصلاحيات/الإعدادات الأساسية إن كانت موجودة.
+- أي جدول تعتمد عليه الجداول المحمية عبر Foreign Key.
+
+ويعمل Safety Check:
+إذا تغيّر عدد صفوف profiles أو user_roles، يرمي Error ويعمل Rollback للمعاملة كلها.
+
+وفي النهاية يعرض:
+table_name | deleted_rows | rows_after
+
+المطلوب:
+كل rows_after = 0.
+
+B) CLOUD PLATFORM STATE
+الملف:
+assets/js/modules/data-reset-hard-v14-9-1.js
+
+يعمل بعد app.js وبعد تسجيل دخول صاحب المنصة.
+يفحص get_platform_state.
+إذا لم يجد علامة 14.9.1:
+- يصفر حالة الإدارة في الذاكرة.
+- يصفر كل القوائم والأرصدة والعدادات.
+- يحفظ الصفر إلى save_platform_state نفسه.
+- يضع meta.cleanStartVersion = 14.9.1 داخل السحابة.
+- يعمل Reload مرة واحدة.
+
+أهمية العلامة السحابية:
+لو فتحت الموقع لاحقًا على جهاز جديد بعد أن بدأت تدخل بيانات حقيقية،
+لن يقوم الجهاز الجديد بإعادة التصفير؛ لأنه يرى علامة 14.9.1 في Cloud State.
+
+الترتيب الصحيح:
+
+1) اقفل تبويبات NUVEXA المفتوحة على الأجهزة الأخرى مؤقتًا.
+
+2) Supabase -> SQL Editor -> New query.
+
+3) شغّل:
+RUN_ONCE_HARD_CLEAN_V14_9_1.sql
+
+4) تأكد أن نتيجة rows_after كلها 0.
+
+5) ارفع كل محتويات V14.9.1 إلى GitHub.
+
+6) بعد اكتمال GitHub Pages:
+Ctrl + Shift + R
+
+7) سجّل دخول Google بحساب صاحب المنصة.
+سيتم تنظيف Cloud Platform State مرة واحدة وإعادة تحميل الصفحة.
+
+8) ادخل لوحة الإدارة:
+المفروض تكون بيانات التشغيل كلها صفر.
+
+محفوظ:
+- Google Auth
+- حساب صاحب المنصة
+- profiles
+- user_roles
+- صلاحيات الدخول
+- التصميم
+- الشعار والفيديوهات
+- الأكواد
+
+لا تدخل بيانات حقيقية قبل إكمال الخطوات الثمانية.
+
+Commit:
+Hard reset NUVEXA cloud and local business data for production start
