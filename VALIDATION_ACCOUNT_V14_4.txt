@@ -1,0 +1,18 @@
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — order-flow.js
+PASS — JS syntax — order-status-menu.js
+PASS — JS syntax — service-worker.js
+PASS — V14.4 CSS loaded
+PASS — V14.4 JS loaded
+PASS — Old account JS not loaded
+PASS — Old auth visual JS not loaded
+PASS — About story still paused
+PASS — One account MutationObserver
+PASS — Observer is direct-child only
+PASS — Visual module has no Supabase writes
+PASS — Google hook still present
+PASS — Logout hook retained
+PASS — Seller action preserved
+PASS — CSS braces balanced
+PASS — SW uses V14.4 cache
