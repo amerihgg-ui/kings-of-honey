@@ -1,5 +1,5 @@
 /* NUVEXA HUB V14.2 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v14-8-1-project-builder-multiselect-whatsapp';
+const CACHE_NAME='nuvexa-hub-v14-9-clean-start';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
@@ -8,6 +8,7 @@ const CORE=[
   './assets/css/about-scene-story-v14-7.css?v=14.7.2',
   './assets/css/project-builder-v14-8.css?v=14.8.1',
   './assets/js/core.js?v=12.9',
+  './assets/js/modules/data-reset-v14-9.js?v=14.9',
   './assets/js/modules/auth.js?v=12.9',
   './assets/js/modules/admin.js?v=12.9',
   './assets/js/modules/customers.js?v=12.9',

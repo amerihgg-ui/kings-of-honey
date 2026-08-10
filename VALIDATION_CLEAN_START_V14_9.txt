@@ -1,0 +1,19 @@
+PASS — JS syntax — data-reset-v14-9.js
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — service-worker.js
+PASS — Reset JS loaded in index
+PASS — Reset JS loaded before app.js
+PASS — Auth storage is NOT removed
+PASS — Local settings preserved
+PASS — Local balances zeroed
+PASS — SQL preserves profiles
+PASS — SQL resets products
+PASS — SQL resets orders
+PASS — SQL resets customer_profiles
+PASS — SQL resets platform state
+PASS — SQL removes product media
+PASS — SQL uses transaction
+PASS — SQL reports deleted rows
+PASS — SW cache bumped
+PASS — SW caches reset module
