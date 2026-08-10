@@ -1,0 +1,22 @@
+PASS — JS syntax — data-reset-hard-v14-9-1.js
+PASS — JS syntax — data-reset-v14-9.js
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — service-worker.js
+PASS — Runtime old state keys are deleted
+PASS — Cloud state is replaced, not merged
+PASS — Products zero
+PASS — Orders zero
+PASS — Customers zero
+PASS — Invoices zero
+PASS — Expenses zero
+PASS — Suppliers zero
+PASS — Accounts zero
+PASS — Profit/finance structures zero
+PASS — Cloud marker prevents repeat
+PASS — SQL wipes all unprotected public tables
+PASS — SQL protects profiles
+PASS — SQL protects user_roles
+PASS — SQL verifies rows zero
+PASS — SQL safety rollback
+PASS — Index uses V14.9.2
+PASS — SW cache bumped

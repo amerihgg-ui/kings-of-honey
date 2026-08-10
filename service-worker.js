@@ -1,5 +1,5 @@
 /* NUVEXA HUB V14.2 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v14-9-1-hard-clean';
+const CACHE_NAME='nuvexa-hub-v14-9-2-total-business-reset';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
@@ -22,7 +22,7 @@ const CORE=[
   './assets/js/modules/order-flow.js?v=13.3',
   './assets/js/modules/order-status-menu.js?v=13.4',
   './assets/js/app.js?v=12.9',
-  './assets/js/modules/data-reset-hard-v14-9-1.js?v=14.9.1',
+  './assets/js/modules/data-reset-hard-v14-9-1.js?v=14.9.2',
   './assets/js/modules/store-visual.js?v=14.0',
   './assets/js/modules/customer-account-v14-4.js?v=14.4',
   './assets/js/modules/about-scene-story-v14-7.js?v=14.7.2',
