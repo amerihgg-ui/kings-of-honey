@@ -1,11 +1,11 @@
 /* NUVEXA HUB V14.2 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v14-5-about-editorial';
+const CACHE_NAME='nuvexa-hub-v14-6-about-fintech-story';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
   './assets/css/store-visual-v14.css?v=14.0',
   './assets/css/customer-account-v14-4.css?v=14.4',
-  './assets/css/about-editorial-v14-5.css?v=14.5',
+  './assets/css/about-fintech-story-v14-6.css?v=14.6',
   './assets/js/core.js?v=12.9',
   './assets/js/modules/auth.js?v=12.9',
   './assets/js/modules/admin.js?v=12.9',
@@ -22,7 +22,7 @@ const CORE=[
   './assets/js/app.js?v=12.9',
   './assets/js/modules/store-visual.js?v=14.0',
   './assets/js/modules/customer-account-v14-4.js?v=14.4',
-  './assets/js/modules/about-editorial-v14-5.js?v=14.5',
+  './assets/js/modules/about-fintech-story-v14-6.js?v=14.6',
   './manifest.webmanifest?v=12.9',
   './favicon.ico?v=12.9',
   './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9',

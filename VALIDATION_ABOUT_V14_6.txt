@@ -1,0 +1,13 @@
+PASS — JS syntax — about-fintech-story-v14-6.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — service-worker.js
+PASS — About CSS loaded
+PASS — About JS loaded
+PASS — No old About V14.5 loaded
+PASS — No Supabase calls
+PASS — No MutationObserver in About
+PASS — One IntersectionObserver max
+PASS — Account V14.4 preserved
+PASS — CSS braces balanced
+PASS — SW cache bumped
