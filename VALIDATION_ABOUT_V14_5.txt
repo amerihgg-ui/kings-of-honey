@@ -1,0 +1,13 @@
+PASS — JS syntax — about-editorial-v14-5.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — store-visual.js
+PASS — JS syntax — service-worker.js
+PASS — About CSS loaded
+PASS — About JS loaded
+PASS — Google fonts loaded
+PASS — SW caches About CSS
+PASS — SW caches About JS
+PASS — About module intercepts store-about
+PASS — No Supabase writes in about module
+PASS — One content observer only
+PASS — CSS braces balanced
