@@ -1,0 +1,19 @@
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — service-worker.js
+PASS — Project type is checkbox multi-select
+PASS — Project goal is checkbox multi-select
+PASS — Visual style is checkbox multi-select
+PASS — Generic repeated-field draft saving
+PASS — Review uses all project types
+PASS — Review uses all goals
+PASS — Review uses all styles
+PASS — WhatsApp CTA present
+PASS — WhatsApp message uses all multi values
+PASS — No Supabase calls
+PASS — No MutationObserver
+PASS — CSS braces balanced
+PASS — V14.8.1 CSS cache bust
+PASS — V14.8.1 JS cache bust
+PASS — New SW cache

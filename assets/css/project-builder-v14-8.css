@@ -740,3 +740,52 @@ body.nx48-project-open #storeContent{
   .nx48-panel{transition:opacity .18s ease,visibility .18s;transform:none!important;filter:none!important}
   .nx48-progress-bar i{transition:none}
 }
+
+
+/* V14.8.1 — prominent WhatsApp CTA in the final review stage */
+.nx48-whatsapp{
+  width:100%;
+  min-height:64px;
+  margin-top:18px;
+  padding:10px 13px;
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr);
+  gap:11px;
+  align-items:center;
+  border:1px solid hsl(153 57% 53% / .50);
+  border-radius:10px;
+  background:hsl(153 57% 53% / .10);
+  color:var(--fg);
+  font:inherit;
+  text-align:right;
+  cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.nx48-whatsapp:hover{
+  transform:translateY(-2px);
+  border-color:var(--success);
+  background:hsl(153 57% 53% / .15);
+  box-shadow:0 15px 34px hsl(153 57% 30% / .12);
+}
+.nx48-whatsapp-icon{
+  width:38px;
+  height:38px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--success);
+  color:hsl(216 43% 6%);
+  font-size:18px;
+  font-weight:900;
+}
+.nx48-whatsapp strong{
+  display:block;
+  color:hsl(153 64% 67%);
+  font-size:11px;
+}
+.nx48-whatsapp small{
+  display:block;
+  margin-top:4px;
+  color:var(--muted-fg);
+  font-size:8px;
+}

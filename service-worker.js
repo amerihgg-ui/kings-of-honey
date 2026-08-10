@@ -1,12 +1,12 @@
 /* NUVEXA HUB V14.2 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v14-8-project-builder';
+const CACHE_NAME='nuvexa-hub-v14-8-1-project-builder-multiselect-whatsapp';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
   './assets/css/store-visual-v14.css?v=14.0',
   './assets/css/customer-account-v14-4.css?v=14.4',
   './assets/css/about-scene-story-v14-7.css?v=14.7.2',
-  './assets/css/project-builder-v14-8.css?v=14.8',
+  './assets/css/project-builder-v14-8.css?v=14.8.1',
   './assets/js/core.js?v=12.9',
   './assets/js/modules/auth.js?v=12.9',
   './assets/js/modules/admin.js?v=12.9',
@@ -24,7 +24,7 @@ const CORE=[
   './assets/js/modules/store-visual.js?v=14.0',
   './assets/js/modules/customer-account-v14-4.js?v=14.4',
   './assets/js/modules/about-scene-story-v14-7.js?v=14.7.2',
-  './assets/js/modules/project-builder-v14-8.js?v=14.8',
+  './assets/js/modules/project-builder-v14-8.js?v=14.8.1',
   './manifest.webmanifest?v=12.9',
   './favicon.ico?v=12.9',
   './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9',

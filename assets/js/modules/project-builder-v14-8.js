@@ -4,8 +4,8 @@
 */
 (()=>{'use strict';
 
-  const VERSION='14.8';
-  const STORAGE_KEY='nuvexa_project_builder_v14_8_draft';
+  const VERSION='14.8.1';
+  const STORAGE_KEY='nuvexa_project_builder_v14_8_1_draft';
   const TOTAL=6;
 
   const $=(s,r=document)=>r.querySelector(s);
@@ -87,14 +87,18 @@
     if(!form)return;
     const fd=new FormData(form);
     const data={};
+
+    // Any repeated field name is preserved as an array.
+    // This lets project type, goals, visual styles, and features all be multi-select.
     for(const [key,value] of fd.entries()){
-      if(key==='features'){
-        data.features=data.features||[];
-        data.features.push(value);
+      if(Object.prototype.hasOwnProperty.call(data,key)){
+        if(!Array.isArray(data[key]))data[key]=[data[key]];
+        data[key].push(value);
       }else{
         data[key]=value;
       }
     }
+
     draft=data;
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}catch{}
     const status=$('[data-nx48-draft-status]');
@@ -124,10 +128,10 @@
       <div class="nx48-panel-inner">
         <span class="nx48-eyebrow">01 / YOUR IDEA</span>
         <h2>احكي لنا: إيه المشروع اللي عايز تبنيه؟</h2>
-        <p class="nx48-panel-lead">ابدأ بالتصنيف الأقرب، وبعدها ادينا وصف بسيط. مش مطلوب منك تعرف المصطلحات التقنية.</p>
+        <p class="nx48-panel-lead">اختار نوع واحد أو أكتر حسب طبيعة مشروعك، وبعدها ادينا وصف بسيط. مش مطلوب منك تعرف المصطلحات التقنية.</p>
 
         <div class="nx48-choice-grid">
-          ${projectTypes.map(([v,d,i])=>choice('projectType',v,v,d,i,false,true)).join('')}
+          ${projectTypes.map(([v,d,i])=>choice('projectType',v,v,d,i,false,false)).join('')}
         </div>
 
         <div class="nx48-fields">
@@ -156,10 +160,10 @@
       <div class="nx48-panel-inner">
         <span class="nx48-eyebrow">02 / GOAL & AUDIENCE</span>
         <h2>المشروع ده لازم يحقق إيه؟ ولمين؟</h2>
-        <p class="nx48-panel-lead">الهدف والجمهور بيحددوا شكل التجربة والصفحات وطريقة ترتيب المعلومات من البداية.</p>
+        <p class="nx48-panel-lead">تقدر تختار أكتر من هدف لو المشروع بيخدم أكثر من غرض. الهدف والجمهور بيحددوا شكل التجربة من البداية.</p>
 
         <div class="nx48-choice-grid two">
-          ${goals.map(v=>choice('projectGoal',v,v,'','',true,true)).join('')}
+          ${goals.map(v=>choice('projectGoal',v,v,'','',true,false)).join('')}
         </div>
 
         <div class="nx48-fields">
@@ -198,10 +202,10 @@
       <div class="nx48-panel-inner">
         <span class="nx48-eyebrow">03 / LOOK & IDENTITY</span>
         <h2>إيه الإحساس اللي لازم المشروع يوصله؟</h2>
-        <p class="nx48-panel-lead">مش لازم تختار ألوان أو خطوط. يكفينا نعرف اتجاه الهوية والانطباع المطلوب.</p>
+        <p class="nx48-panel-lead">تقدر تختار أكتر من اتجاه بصري لو عايز نمزج بينهم. مش لازم تحدد ألوان أو خطوط من دلوقتي.</p>
 
         <div class="nx48-choice-grid two">
-          ${styles.map(v=>choice('visualStyle',v,v,'','',true,true)).join('')}
+          ${styles.map(v=>choice('visualStyle',v,v,'','',true,false)).join('')}
         </div>
 
         <div class="nx48-fields">
@@ -296,20 +300,28 @@
     </section>`;
   }
 
+  function allValues(fd,name,fallback='—'){
+    const values=fd.getAll(name).map(v=>String(v||'').trim()).filter(Boolean);
+    return values.length?values.join('، '):fallback;
+  }
+
   function reviewRows(fd){
-    const featuresList=fd.getAll('features').join('، ')||'يتم تحديدها بعد المناقشة';
+    const projectTypesList=allValues(fd,'projectType');
+    const goalsList=allValues(fd,'projectGoal');
+    const stylesList=allValues(fd,'visualStyle');
+    const featuresList=allValues(fd,'features','يتم تحديدها بعد المناقشة');
     const rows=[
-      ['نوع المشروع',fd.get('projectType')],
+      ['نوع المشروع',projectTypesList],
       ['اسم المشروع',fd.get('projectName')],
       ['حالة المشروع',fd.get('projectState')],
       ['الفكرة',fd.get('idea')],
       ['المشكلة',fd.get('problem')],
-      ['الهدف',fd.get('projectGoal')],
+      ['الهدف',goalsList],
       ['الجمهور',fd.get('audience')],
       ['السوق',fd.get('market')],
       ['أهم إجراء',fd.get('primaryAction')],
       ['أولويات النسخة الأولى',fd.get('topPriorities')],
-      ['الأسلوب البصري',fd.get('visualStyle')],
+      ['الأسلوب البصري',stylesList],
       ['الشعار والهوية',fd.get('hasLogo')],
       ['الوظائف',featuresList],
       ['موقع حالي',fd.get('hasWebsite')],
@@ -361,9 +373,15 @@
         <div class="nx48-review-grid">
           <div class="nx48-review" data-nx48-review></div>
           <aside class="nx48-review-side">
-            <h3>جاهز للإرسال؟</h3>
-            <p>هنحوّل الإجابات إلى رسالة مرتبة ونفتحها في WhatsApp. لن يتم إرسال أي شيء تلقائيًا بدون موافقتك داخل واتساب.</p>
-            <div class="nx48-review-note">المسودة محفوظة على جهازك تلقائيًا أثناء ملء النموذج.</div>
+            <h3>جاهز للتواصل؟</h3>
+            <p>هنحوّل كل إجاباتك واختياراتك — بما فيها الاختيارات المتعددة — إلى رسالة مرتبة ونفتحها في WhatsApp. تقدر تراجع الرسالة قبل الإرسال.</p>
+
+            <button type="submit" class="nx48-whatsapp" data-nx48-whatsapp>
+              <span class="nx48-whatsapp-icon" aria-hidden="true">◉</span>
+              <span><strong>تواصل معنا عبر واتساب</strong><small>إرسال تفاصيل المشروع للمناقشة</small></span>
+            </button>
+
+            <div class="nx48-review-note">المسودة محفوظة على جهازك تلقائيًا أثناء ملء النموذج، ولا يتم إرسال أي شيء تلقائيًا.</div>
           </aside>
         </div>
       </div>
@@ -421,7 +439,7 @@
               </div>
               <div class="nx48-nav-left">
                 <button type="button" class="primary" data-nx48-next>التالي</button>
-                <button type="submit" class="send hidden" data-nx48-send>فتح الرسالة في واتساب</button>
+                <button type="submit" class="send hidden" data-nx48-send>تواصل عبر واتساب</button>
               </div>
             </footer>
           </form>
@@ -523,19 +541,22 @@
   }
 
   function message(fd){
-    const f=fd.getAll('features').join('، ')||'يتم تحديدها بعد المناقشة';
+    const projectTypesList=allValues(fd,'projectType');
+    const goalsList=allValues(fd,'projectGoal');
+    const stylesList=allValues(fd,'visualStyle');
+    const f=allValues(fd,'features','يتم تحديدها بعد المناقشة');
     const lines=[
-      'مرحبًا NUVEXA HUB، أريد بدء مشروع جديد.',
+      'مرحبًا NUVEXA HUB، أريد مناقشة مشروع جديد. هذه تفاصيل الـBrief الذي أعددته على المنصة:',
       '',
       '— فكرة المشروع —',
-      `• نوع المشروع: ${fd.get('projectType')||'—'}`,
+      `• نوع المشروع: ${projectTypesList}`,
       `• اسم المشروع: ${fd.get('projectName')||'—'}`,
       `• حالة المشروع: ${fd.get('projectState')||'—'}`,
       `• الفكرة: ${fd.get('idea')||'—'}`,
       `• المشكلة المطلوب حلها: ${fd.get('problem')||'—'}`,
       '',
       '— الهدف والجمهور —',
-      `• الهدف: ${fd.get('projectGoal')||'—'}`,
+      `• الهدف: ${goalsList}`,
       `• الجمهور: ${fd.get('audience')||'—'}`,
       `• السوق: ${fd.get('market')||'—'}`,
       `• اللغة: ${fd.get('language')||'—'}`,
@@ -543,7 +564,7 @@
       `• أولويات النسخة الأولى: ${fd.get('topPriorities')||'—'}`,
       '',
       '— الشكل والهوية —',
-      `• الاتجاه البصري: ${fd.get('visualStyle')||'—'}`,
+      `• الاتجاه البصري: ${stylesList}`,
       `• الشعار والهوية: ${fd.get('hasLogo')||'—'}`,
       `• نظام الهوية: ${fd.get('brandSystem')||'—'}`,
       `• مرجع بصري: ${fd.get('referenceUrl')||'—'}`,
