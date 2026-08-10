@@ -1,0 +1,17 @@
+PASS — JS syntax — full-empty-data-v15-2.js
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — service-worker.js
+PASS — Local products empty
+PASS — Local orders empty
+PASS — Local customers empty
+PASS — Local invoices empty
+PASS — Local finance empty
+PASS — Accounts zero
+PASS — SQL wipes all non-protected public tables
+PASS — SQL keeps only owner profile
+PASS — SQL keeps only owner roles
+PASS — SQL removes product media
+PASS — SQL verifies zero
+PASS — Index loads reset before app
+PASS — SW cache bumped
