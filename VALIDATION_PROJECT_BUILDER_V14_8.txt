@@ -1,0 +1,18 @@
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — service-worker.js
+PASS — Project Builder CSS loaded
+PASS — Project Builder JS loaded
+PASS — About CTA points to project builder
+PASS — 6 steps declared
+PASS — Review section present
+PASS — Autosave present
+PASS — WhatsApp handoff present
+PASS — No Supabase calls
+PASS — No MutationObserver
+PASS — Existing header preserved
+PASS — CSS braces balanced
+PASS — SW cache bumped
+PASS — SW caches builder CSS
+PASS — SW caches builder JS

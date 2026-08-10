@@ -3,7 +3,7 @@
 */
 (()=>{'use strict';
 
-  const VERSION='14.7.1';
+  const VERSION='14.7.2';
   const $=(s,r=document)=>r.querySelector(s);
   const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 
@@ -244,12 +244,12 @@
           <!-- 10: next -->
           <section class="nx47-scene nx47-final" data-scene="10">
             <div class="nx47-scene-inner">
-              <span class="nx47-eyebrow">NEXT STEP</span>
-              <h2 class="nx47-title">الخطوة التالية:<br><span>تصميم «ابدأ مشروعك».</span></h2>
-              <p class="nx47-copy">بعد اعتماد تجربة «من نحن» بالشكل ده، ندخل على قسم ابدأ مشروعك كجزء مستقل ونبنيه بنفس اللغة البصرية.</p>
+              <span class="nx47-eyebrow">START YOUR PROJECT</span>
+              <h2 class="nx47-title">عندك فكرة؟<br><span>حوّلها إلى Brief واضح.</span></h2>
+              <p class="nx47-copy">جاوب على 6 مراحل قصيرة عن الفكرة والجمهور والهوية والوظائف والجاهزية، وبعدها راجع المشروع كله قبل ما تبعت الطلب.</p>
               <div class="nx47-actions">
-                <button type="button" class="nx47-btn primary" data-nx47-products>EXPLORE PRODUCTS</button>
-                <button type="button" class="nx47-btn" data-action="customer-account">MY ACCOUNT</button>
+                <button type="button" class="nx47-btn primary" data-nx48-project>ابدأ مشروعك</button>
+                <button type="button" class="nx47-btn" data-nx47-products>EXPLORE PRODUCTS</button>
               </div>
             </div>
           </section>
