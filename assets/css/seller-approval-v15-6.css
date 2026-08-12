@@ -1,0 +1,132 @@
+/* NUVEXA HUB V15.4 — Seller approval workflow */
+.nx154-alert-badge,.nx154-module-badge{
+  position:absolute;min-width:18px;height:18px;padding:0 5px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:900;line-height:1;z-index:4;
+  background:#d89d36;color:#07111c;border:2px solid #07111c;
+}
+.nx154-alert-badge{top:-6px;left:-6px}
+.nx154-module-badge{top:6px;left:7px}
+[data-action="open-alerts"],[data-open-module="alerts"]{position:relative}
+
+.nx154-admin-panel{
+  margin:0 0 18px;border:1px solid rgba(198,145,50,.25);
+  background:linear-gradient(180deg,rgba(10,20,31,.98),rgba(7,14,22,.98));
+  border-radius:18px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.16);
+}
+.nx154-panel-head{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:20px 22px;border-bottom:1px solid rgba(255,255,255,.07)
+}
+.nx154-panel-head span{font-size:10px;letter-spacing:.18em;color:#d8a84d;font-weight:900}
+.nx154-panel-head h2{margin:5px 0 4px;color:#fff;font-size:21px}
+.nx154-panel-head p{margin:0;color:#8fa0b2;font-size:13px}
+.nx154-panel-head>b{
+  min-width:40px;height:40px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(208,158,67,.12);border:1px solid rgba(208,158,67,.38);color:#e4b65e
+}
+.nx154-app-list{padding:12px}
+.nx154-app-card{
+  display:grid;grid-template-columns:46px minmax(0,1fr) auto;gap:14px;align-items:center;
+  padding:15px 14px;margin:8px 0;border-radius:14px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.07)
+}
+.nx154-app-card:hover{border-color:rgba(216,168,77,.28)}
+.nx154-app-icon{
+  width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  background:rgba(216,168,77,.10);color:#e0af53;font-size:20px
+}
+.nx154-app-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.nx154-app-title>div>span{display:block;color:#8d9bad;font-size:10px;font-weight:800}
+.nx154-app-title h3{margin:3px 0;color:#f7f9fb;font-size:15px}
+.nx154-app-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;color:#93a3b5;font-size:11px}
+.nx154-app-desc{margin:9px 0 0;color:#b9c4ce;font-size:12px;line-height:1.7}
+.nx154-status{white-space:nowrap;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900}
+.nx154-status.pending{background:rgba(217,160,47,.13);color:#edbc59}
+.nx154-status.approved{background:rgba(39,170,111,.12);color:#62d69d}
+.nx154-status.rejected{background:rgba(214,78,78,.12);color:#ef8a8a}
+.nx154-app-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.nx154-empty{padding:30px;text-align:center;color:#94a4b5}
+.nx154-empty>span{display:block;font-size:30px;color:#50c58a}
+.nx154-empty strong{display:block;margin:8px 0 4px;color:#e8edf2}
+.nx154-empty p{margin:0;font-size:12px}
+
+.nx154-account-status{
+  grid-column:1/-1;display:flex;gap:12px;align-items:flex-start;
+  padding:13px 14px;border-radius:12px;margin-bottom:4px;border:1px solid
+}
+.nx154-account-state-icon{
+  width:32px;height:32px;flex:0 0 32px;border-radius:50%;display:grid;place-items:center;font-weight:900
+}
+.nx154-account-status strong{display:block;margin:1px 0 3px}
+.nx154-account-status p{margin:0!important;font-size:12px!important;line-height:1.65}
+.nx154-account-status.pending{background:rgba(213,155,46,.07);border-color:rgba(213,155,46,.24)}
+.nx154-account-status.pending .nx154-account-state-icon{background:rgba(213,155,46,.14);color:#d7a13c}
+.nx154-account-status.approved{background:rgba(39,170,111,.07);border-color:rgba(39,170,111,.23)}
+.nx154-account-status.approved .nx154-account-state-icon{background:rgba(39,170,111,.14);color:#39b87d}
+.nx154-account-status.rejected{background:rgba(197,64,64,.07);border-color:rgba(197,64,64,.22)}
+.nx154-account-status.rejected .nx154-account-state-icon{background:rgba(197,64,64,.13);color:#d96262}
+
+.nx154-dialog{border:0;padding:0;background:transparent;max-width:min(720px,94vw);width:100%}
+.nx154-dialog::backdrop{background:rgba(0,0,0,.68);backdrop-filter:blur(8px)}
+.nx154-dialog-card{
+  direction:rtl;background:#09131e;color:#e9eef3;border:1px solid rgba(217,166,72,.28);
+  border-radius:20px;overflow:hidden;box-shadow:0 28px 90px rgba(0,0,0,.45)
+}
+.nx154-dialog-card>header{
+  display:flex;justify-content:space-between;gap:20px;align-items:center;
+  padding:20px 22px;border-bottom:1px solid rgba(255,255,255,.07)
+}
+.nx154-dialog-card>header span{display:block;color:#d7a64c;font-size:10px;letter-spacing:.16em;font-weight:900}
+.nx154-dialog-card>header h2{margin:4px 0 0;font-size:20px}
+.nx154-dialog-card>header button{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.12);
+  background:transparent;color:#fff;cursor:pointer
+}
+.nx154-detail-grid{padding:20px 22px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.nx154-detail-grid>div{padding:13px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.06)}
+.nx154-detail-grid .wide{grid-column:1/-1}
+.nx154-detail-grid small{display:block;color:#8192a5;margin-bottom:5px}
+.nx154-detail-grid strong,.nx154-detail-grid p{margin:0;color:#eef2f5;line-height:1.7}
+.nx154-detail-grid .reason{border-color:rgba(209,76,76,.18);background:rgba(209,76,76,.055)}
+.nx154-dialog-card>footer{display:flex;gap:8px;justify-content:flex-end;padding:16px 22px;border-top:1px solid rgba(255,255,255,.07)}
+.nx154-reject-body{padding:20px 22px}
+.nx154-reject-body p{margin:0 0 12px;color:#9aabbb}
+.nx154-reject-body textarea{
+  width:100%;min-height:130px;resize:vertical;border-radius:12px;padding:13px;
+  background:#07101a;color:#fff;border:1px solid rgba(255,255,255,.12);font:inherit
+}
+
+@media(max-width:760px){
+  .nx154-app-card{grid-template-columns:40px 1fr}
+  .nx154-app-actions{grid-column:1/-1;justify-content:stretch}
+  .nx154-app-actions .btn{flex:1}
+  .nx154-app-title{display:block}
+  .nx154-status{display:inline-flex;margin-top:6px}
+  .nx154-detail-grid{grid-template-columns:1fr}
+  .nx154-detail-grid .wide{grid-column:auto}
+  .nx154-dialog-card>footer{flex-direction:column}
+}
+
+
+/* V15.6 action hotfix */
+.nx154-app-actions{
+  position:relative;
+  z-index:5;
+  pointer-events:auto;
+}
+.nx154-app-actions .btn,
+.nx154-dialog .btn,
+.nx154-dialog button{
+  pointer-events:auto!important;
+  position:relative;
+  z-index:6;
+  touch-action:manipulation;
+}
+.nx156-dialog-fallback{
+  position:fixed;
+  inset:50% auto auto 50%;
+  transform:translate(-50%,-50%);
+  z-index:99999;
+  margin:0;
+}

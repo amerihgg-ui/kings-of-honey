@@ -1,0 +1,15 @@
+PASS — JS syntax — seller-approval-workflow-v15-6.js
+PASS — JS syntax — service-worker.js
+PASS — Version 15.6
+PASS — Stable panel signatures
+PASS — Observer ignores own panels
+PASS — Details hard-stops old handlers
+PASS — Approve hard-stops old handlers
+PASS — Reject hard-stops old handlers
+PASS — Application refresh before action
+PASS — Dialog fallback
+PASS — CSS pointer events
+PASS — Index loads V15.6 JS
+PASS — Index loads V15.6 CSS
+PASS — SW cache bumped
+PASS — No reset script loaded
