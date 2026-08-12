@@ -4,7 +4,7 @@
 */
 (()=>{'use strict';
 
-  const VERSION='14.8.2';
+  const VERSION='14.8.1';
   const STORAGE_KEY='nuvexa_project_builder_v14_8_1_draft';
   const TOTAL=6;
 
@@ -540,114 +540,61 @@
     if(active)active.scrollTop=0;
   }
 
-  function compact(value,max=260){
-    const text=String(value??'').replace(/\s+/g,' ').trim();
-    if(!text)return '';
-    return text.length>max?`${text.slice(0,max-1).trim()}…`:text;
-  }
-
-  function whatsappNumber(){
-    const state=window.NuvexaRuntime?.getState?.();
-    let phone=String(state?.settings?.whatsappNumber||'').trim().replace(/\D/g,'');
-
-    // wa.me needs the international number without + or an international 00 prefix.
-    if(phone.startsWith('00'))phone=phone.slice(2);
-    return phone;
-  }
-
   function message(fd){
-    const projectTypesList=allValues(fd,'projectType','');
-    const goalsList=allValues(fd,'projectGoal','');
-    const stylesList=allValues(fd,'visualStyle','');
-    const featuresList=allValues(fd,'features','');
-
-    const sections=[];
-    const block=(title,rows)=>{
-      const cleanRows=rows
-        .filter(([,value])=>compact(value))
-        .map(([label,value])=>`• ${label}: ${compact(value)}`);
-      if(cleanRows.length)sections.push(`*${title}*\n${cleanRows.join('\n')}`);
-    };
-
-    const clientName=compact(fd.get('clientName'));
-    const projectName=compact(fd.get('projectName'));
-
-    const intro=[
-      '*طلب مشروع جديد — NUVEXA HUB*',
-      clientName?`العميل: ${clientName}`:'',
-      projectName?`المشروع: ${projectName}`:''
-    ].filter(Boolean).join('\n');
-
-    block('📌 المشروع',[
-      ['النوع',projectTypesList],
-      ['الحالة',fd.get('projectState')],
-      ['الفكرة',compact(fd.get('idea'),320)],
-      ['المشكلة المطلوب حلها',compact(fd.get('problem'),260)]
-    ]);
-
-    block('🎯 الهدف والجمهور',[
-      ['الأهداف',goalsList],
-      ['الجمهور',fd.get('audience')],
-      ['السوق',fd.get('market')],
-      ['اللغة',fd.get('language')],
-      ['الإجراء الأساسي',fd.get('primaryAction')],
-      ['أولويات النسخة الأولى',compact(fd.get('topPriorities'),280)]
-    ]);
-
-    block('🎨 الشكل والهوية',[
-      ['الاتجاه البصري',stylesList],
-      ['الشعار والهوية',fd.get('hasLogo')],
-      ['نظام الهوية',fd.get('brandSystem')],
-      ['مرجع بصري',fd.get('referenceUrl')],
-      ['ملاحظة التصميم',compact(fd.get('designNote'),220)]
-    ]);
-
-    block('⚙️ الوظائف المطلوبة',[
-      ['الوظائف',featuresList],
-      ['التكاملات',fd.get('integrations')],
-      ['الأدوار والصلاحيات',fd.get('roles')],
-      ['وظيفة خاصة',compact(fd.get('customFeature'),220)]
-    ]);
-
-    block('🧩 الوضع الحالي',[
-      ['موقع حالي',fd.get('hasWebsite')],
-      ['رابط الموقع',fd.get('currentUrl')],
-      ['الدومين',fd.get('domainStatus')],
-      ['الاستضافة',fd.get('hostingStatus')],
-      ['المحتوى والصور',fd.get('hasContent')],
-      ['بيانات يجب الحفاظ عليها',fd.get('existingData')],
-      ['ملاحظة',compact(fd.get('existingNote'),220)]
-    ]);
-
-    block('🗓️ التنفيذ والتواصل',[
-      ['موعد البدء',fd.get('timeline')],
-      ['الأولوية',fd.get('priority')],
-      ['الميزانية',fd.get('budget')||'تُناقش لاحقًا'],
-      ['الهاتف',fd.get('clientPhone')],
-      ['البريد',fd.get('clientEmail')],
-      ['ملاحظة أخيرة',compact(fd.get('finalNote'),220)]
-    ]);
-
-    return [intro,...sections].filter(Boolean).join('\n\n');
-  }
-
-  function showWhatsAppConfigError(messageText='أضف رقم واتساب صحيح من إعدادات الموقع أولًا'){
-    const status=$('[data-nx48-draft-status]');
-    if(status){
-      status.textContent=messageText;
-      status.style.color='var(--danger)';
-      setTimeout(()=>{
-        status.textContent='المسودة تُحفظ تلقائيًا';
-        status.style.color='';
-      },3200);
-    }
-
-    try{
-      window.NuvexaRuntime?.core?.events?.emit?.('toast',{
-        message:messageText,
-        type:'error'
-      });
-    }catch{}
+    const projectTypesList=allValues(fd,'projectType');
+    const goalsList=allValues(fd,'projectGoal');
+    const stylesList=allValues(fd,'visualStyle');
+    const f=allValues(fd,'features','يتم تحديدها بعد المناقشة');
+    const lines=[
+      'مرحبًا NUVEXA HUB، أريد مناقشة مشروع جديد. هذه تفاصيل الـBrief الذي أعددته على المنصة:',
+      '',
+      '— فكرة المشروع —',
+      `• نوع المشروع: ${projectTypesList}`,
+      `• اسم المشروع: ${fd.get('projectName')||'—'}`,
+      `• حالة المشروع: ${fd.get('projectState')||'—'}`,
+      `• الفكرة: ${fd.get('idea')||'—'}`,
+      `• المشكلة المطلوب حلها: ${fd.get('problem')||'—'}`,
+      '',
+      '— الهدف والجمهور —',
+      `• الهدف: ${goalsList}`,
+      `• الجمهور: ${fd.get('audience')||'—'}`,
+      `• السوق: ${fd.get('market')||'—'}`,
+      `• اللغة: ${fd.get('language')||'—'}`,
+      `• أهم إجراء للزائر: ${fd.get('primaryAction')||'—'}`,
+      `• أولويات النسخة الأولى: ${fd.get('topPriorities')||'—'}`,
+      '',
+      '— الشكل والهوية —',
+      `• الاتجاه البصري: ${stylesList}`,
+      `• الشعار والهوية: ${fd.get('hasLogo')||'—'}`,
+      `• نظام الهوية: ${fd.get('brandSystem')||'—'}`,
+      `• مرجع بصري: ${fd.get('referenceUrl')||'—'}`,
+      `• ملاحظات التصميم: ${fd.get('designNote')||'—'}`,
+      '',
+      '— الوظائف —',
+      `• الوظائف المطلوبة: ${f}`,
+      `• التكاملات: ${fd.get('integrations')||'—'}`,
+      `• الأدوار والصلاحيات: ${fd.get('roles')||'—'}`,
+      `• وظيفة خاصة: ${fd.get('customFeature')||'—'}`,
+      '',
+      '— الموجود حاليًا —',
+      `• موقع حالي: ${fd.get('hasWebsite')||'—'}`,
+      `• رابط حالي: ${fd.get('currentUrl')||'—'}`,
+      `• الدومين: ${fd.get('domainStatus')||'—'}`,
+      `• الاستضافة: ${fd.get('hostingStatus')||'—'}`,
+      `• المحتوى والصور: ${fd.get('hasContent')||'—'}`,
+      `• بيانات يجب الحفاظ عليها: ${fd.get('existingData')||'—'}`,
+      `• ملاحظات الموجود: ${fd.get('existingNote')||'—'}`,
+      '',
+      '— التنفيذ والتواصل —',
+      `• موعد البدء: ${fd.get('timeline')||'—'}`,
+      `• الأولوية: ${fd.get('priority')||'—'}`,
+      `• الميزانية: ${fd.get('budget')||'أفضل مناقشتها لاحقًا'}`,
+      `• الاسم: ${fd.get('clientName')||'—'}`,
+      `• الهاتف: ${fd.get('clientPhone')||'—'}`,
+      `• البريد: ${fd.get('clientEmail')||'—'}`,
+      `• ملاحظات: ${fd.get('finalNote')||'لا توجد'}`
+    ];
+    return lines.join('\n');
   }
 
   function openWhatsApp(){
@@ -658,29 +605,25 @@
     if(result!==true){showError(result);return}
 
     saveDraft();
+    const state=window.NuvexaRuntime?.getState?.();
+    const phone=String(state?.settings?.whatsappNumber||'').replace(/\D/g,'');
+    const text=encodeURIComponent(message(new FormData(form)));
 
-    const phone=whatsappNumber();
-    if(phone.length<8){
-      showWhatsAppConfigError();
+    if(phone){
+      window.open(`https://wa.me/${phone}?text=${text}`,'_blank','noopener');
+    }else{
+      // Keep current behavior expectation: WhatsApp number must be configured.
+      const status=$('[data-nx48-draft-status]');
+      if(status){
+        status.textContent='أضف رقم واتساب من إعدادات المتجر أولًا';
+        status.style.color='var(--danger)';
+      }
       return;
     }
 
-    const summary=message(new FormData(form));
-    const url=`https://wa.me/${phone}?text=${encodeURIComponent(summary)}`;
-
-    // IMPORTANT:
-    // Do not use window.open(). Some browsers/PWAs intermittently block it as a popup.
-    // Direct navigation is tied to the user's submit gesture and is much more reliable.
-    // WhatsApp/WhatsApp Web receives the platform number + pre-filled brief.
-    try{
-      window.location.assign(url);
-    }catch(error){
-      try{
-        window.location.href=url;
-      }catch{
-        showWhatsAppConfigError('تعذر فتح واتساب. تأكد من رقم واتساب في إعدادات الموقع.');
-      }
-    }
+    $('[data-nx48-success]')?.classList.add('show');
+    $$('.nx48-panel').forEach(x=>x.classList.remove('active'));
+    $('.nx48-nav')?.classList.add('hidden');
   }
 
   function openBuilder(){
