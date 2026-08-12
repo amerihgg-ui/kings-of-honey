@@ -1,0 +1,20 @@
+PASS — JS syntax — project-builder-v15-5.js
+PASS — JS syntax — seller-approval-workflow-v15-5.js
+PASS — JS syntax — service-worker.js
+PASS — index build marker 15.5
+PASS — old reset script is not loaded
+PASS — new WhatsApp builder is loaded
+PASS — new seller workflow is loaded
+PASS — new seller CSS is loaded
+PASS — old Project Builder runtime URL removed
+PASS — WhatsApp reads public cloud contact
+PASS — WhatsApp message capped for mobile
+PASS — WhatsApp click-to-chat URL present
+PASS — seller bell refreshes cloud requests
+PASS — rejection reason appears in account
+PASS — seller approval RPC present
+PASS — SQL grants public contact RPC to guest + signed in
+PASS — SQL includes seller approval workflow
+PASS — service worker is network-first for code
+PASS — service worker cache bumped
+PASS — auth.js not included/modified in patch

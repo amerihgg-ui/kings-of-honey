@@ -1,0 +1,39 @@
+NUVEXA HUB — V15.5
+
+تم إصلاح السبب الحقيقي للمشكلتين:
+
+واتساب:
+- رقم واتساب أصبح يُقرأ من Supabase كبيان اتصال عام، وليس من جهاز الإدارة فقط.
+- يعمل للعميل على أي جهاز/متصفح.
+- ملف جديد project-builder-v15-5.js يكسر الكاش القديم.
+- طول الرسالة مضبوط للموبايل.
+
+طلب البائع:
+- ملف جديد seller-approval-workflow-v15-5.js ويتم تحميله فعليًا من index.html.
+- الطلب يظهر على جرس التنبيهات.
+- الضغط على الجرس يجلب أحدث الطلبات من Supabase أولًا.
+- التفاصيل/قبول/رفض/سبب الرفض تعمل.
+- القبول يمنح seller لنفس المستخدم.
+- الرفض يظهر سببه داخل حساب العميل.
+
+الكاش:
+- Service Worker أصبح Network-first لملفات HTML/JS/CSS.
+- الصور والفيديوهات تظل Cache-first.
+
+التنفيذ:
+1) Supabase > SQL Editor > New Query.
+2) شغّل RUN_ONCE_FIX_WHATSAPP_AND_SELLER_V15_5.sql
+3) آخر نتيجة:
+   migration = nuvexa_cross_browser_seller_fix_v15_5
+   status = READY
+4) whatsapp_number_found يجب أن يعرض رقم واتساب الموقع.
+5) ارفع كل ملفات ZIP على GitHub.
+6) انتظر GitHub Pages ثم Refresh مرة على كل جهاز.
+
+لا يوجد Reset.
+لا حذف بيانات.
+Google Auth لم يتم تغييره.
+الطلبات والمحاسبة والمخزون لم تتغير.
+
+Commit:
+Fix WhatsApp across devices and load seller requests into admin alerts

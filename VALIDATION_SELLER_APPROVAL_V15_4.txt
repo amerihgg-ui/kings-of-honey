@@ -1,0 +1,24 @@
+PASS — JS syntax — seller-approval-workflow-v15-4.js
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — service-worker.js
+PASS — SQL adds rejection reason
+PASS — SQL keeps existing submit RPC
+PASS — SQL own application RPC
+PASS — SQL admin list RPC
+PASS — SQL review RPC
+PASS — Approval grants seller role
+PASS — Rejection reason required
+PASS — Resubmit clears rejection reason
+PASS — Admin bell badge
+PASS — Admin alerts panel
+PASS — Customer pending status
+PASS — Customer approval status
+PASS — Customer rejection reason
+PASS — Realtime listener
+PASS — Polling fallback
+PASS — No Google auth file modification
+PASS — Index loads seller workflow
+PASS — Index loads seller CSS
+PASS — SW cache bumped
+PASS — V15.3 WhatsApp builder retained

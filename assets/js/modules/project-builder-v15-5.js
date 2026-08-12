@@ -4,7 +4,7 @@
 */
 (()=>{'use strict';
 
-  const VERSION='14.8.2';
+  const VERSION='15.5';
   const STORAGE_KEY='nuvexa_project_builder_v14_8_1_draft';
   const TOTAL=6;
 
@@ -546,13 +546,34 @@
     return text.length>max?`${text.slice(0,max-1).trim()}…`:text;
   }
 
-  function whatsappNumber(){
-    const state=window.NuvexaRuntime?.getState?.();
-    let phone=String(state?.settings?.whatsappNumber||'').trim().replace(/\D/g,'');
-
-    // wa.me needs the international number without + or an international 00 prefix.
+  function normalizeWhatsAppNumber(value){
+    let phone=String(value||'').trim().replace(/\D/g,'');
     if(phone.startsWith('00'))phone=phone.slice(2);
     return phone;
+  }
+
+  async function whatsappNumber(){
+    // V15.5: normal customers/new devices do not load private admin Platform State.
+    // Read ONLY the public WhatsApp contact through a safe Supabase RPC.
+    try{
+      const sb=window.NuvexaAuth?.getClient?.();
+      if(sb){
+        const {data,error}=await sb.rpc('get_public_contact_settings_v155');
+        if(!error){
+          const row=Array.isArray(data)?data[0]:data;
+          const cloud=normalizeWhatsAppNumber(
+            row?.whatsapp_number||row?.whatsappNumber||row?.whatsapp||''
+          );
+          if(cloud.length>=8)return cloud;
+        }
+      }
+    }catch(error){
+      console.warn('[NUVEXA V15.5] public WhatsApp settings:',error);
+    }
+
+    // Same-device fallback.
+    const state=window.NuvexaRuntime?.getState?.();
+    return normalizeWhatsAppNumber(state?.settings?.whatsappNumber||'');
   }
 
   function message(fd){
@@ -650,7 +671,7 @@
     }catch{}
   }
 
-  function openWhatsApp(){
+  async function openWhatsApp(){
     const form=getForm();
     if(!form)return;
 
@@ -659,13 +680,14 @@
 
     saveDraft();
 
-    const phone=whatsappNumber();
+    const phone=await whatsappNumber();
     if(phone.length<8){
       showWhatsAppConfigError();
       return;
     }
 
-    const summary=message(new FormData(form));
+    let summary=message(new FormData(form));
+    if(summary.length>1900)summary=`${summary.slice(0,1880).trim()}…`;
     const url=`https://wa.me/${phone}?text=${encodeURIComponent(summary)}`;
 
     // IMPORTANT:
@@ -673,7 +695,14 @@
     // Direct navigation is tied to the user's submit gesture and is much more reliable.
     // WhatsApp/WhatsApp Web receives the platform number + pre-filled brief.
     try{
-      window.location.assign(url);
+      const link=document.createElement('a');
+      link.href=url;
+      link.target='_self';
+      link.rel='noopener';
+      link.style.display='none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(()=>link.remove(),1000);
     }catch(error){
       try{
         window.location.href=url;

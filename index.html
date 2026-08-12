@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#050b12" />
+  <meta name="nuvexa-build" content="15.5" />
   <meta name="description" content="NUVEXA HUB - متجر إلكتروني ونظام إدارة المبيعات والمخزون والمحاسبة" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="NUVEXA HUB" />
@@ -57,6 +58,7 @@
   <link rel="stylesheet" href="assets/css/customer-account-v14-4.css?v=14.4" />
   <link rel="stylesheet" href="assets/css/about-scene-story-v14-7.css?v=14.7.2" />
   <link rel="stylesheet" href="assets/css/project-builder-v14-8.css?v=14.8.1" />
+  <link rel="stylesheet" href="assets/css/seller-approval-v15-5.css?v=15.5" />
 </head>
 <body>
   <section id="splashScreen" class="splash-screen" aria-label="افتتاح NUVEXA HUB">
@@ -289,7 +291,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/core.js?v=12.9" defer></script>
-  <script src="assets/js/modules/full-empty-data-v15-2.js?v=15.2" defer></script>
   <script src="assets/js/modules/orders.js?v=12.9" defer></script>
   <script src="assets/js/modules/products.js?v=12.9" defer></script>
   <script src="assets/js/modules/seller.js?v=12.9" defer></script>
@@ -305,7 +306,15 @@
   <script src="assets/js/app.js?v=12.9" defer></script>
   <script src="assets/js/modules/store-visual.js?v=14.0" defer></script>
   <script src="assets/js/modules/customer-account-v14-4.js?v=14.4" defer></script>
+  <script src="assets/js/modules/seller-approval-workflow-v15-5.js?v=15.5" defer></script>
   <script src="assets/js/modules/about-scene-story-v14-7.js?v=14.7.2" defer></script>
-  <script src="assets/js/modules/project-builder-v14-8.js?v=14.8.1" defer></script>
+  <script src="assets/js/modules/project-builder-v15-5.js?v=15.5" defer></script>
+  <script>
+    window.addEventListener('load',()=>{
+      if('serviceWorker' in navigator){
+        navigator.serviceWorker.getRegistration().then(reg=>reg?.update()).catch(()=>{});
+      }
+    },{once:true});
+  </script>
 </body>
 </html>

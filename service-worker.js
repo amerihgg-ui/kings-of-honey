@@ -1,5 +1,5 @@
 /* NUVEXA HUB V14.2 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v15-2-full-empty-data';
+const CACHE_NAME='nuvexa-hub-v15-5-cross-browser-seller';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
@@ -7,8 +7,8 @@ const CORE=[
   './assets/css/customer-account-v14-4.css?v=14.4',
   './assets/css/about-scene-story-v14-7.css?v=14.7.2',
   './assets/css/project-builder-v14-8.css?v=14.8.1',
+  './assets/css/seller-approval-v15-5.css?v=15.5',
   './assets/js/core.js?v=12.9',
-  './assets/js/modules/full-empty-data-v15-2.js?v=15.2',
   './assets/js/modules/auth.js?v=12.9',
   './assets/js/modules/admin.js?v=12.9',
   './assets/js/modules/customers.js?v=12.9',
@@ -24,8 +24,9 @@ const CORE=[
   './assets/js/app.js?v=12.9',
   './assets/js/modules/store-visual.js?v=14.0',
   './assets/js/modules/customer-account-v14-4.js?v=14.4',
+  './assets/js/modules/seller-approval-workflow-v15-5.js?v=15.5',
   './assets/js/modules/about-scene-story-v14-7.js?v=14.7.2',
-  './assets/js/modules/project-builder-v14-8.js?v=14.8.1',
+  './assets/js/modules/project-builder-v15-5.js?v=15.5',
   './manifest.webmanifest?v=12.9',
   './favicon.ico?v=12.9',
   './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9',
@@ -51,16 +52,27 @@ self.addEventListener('activate',event=>{
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET')return;
   const url=new URL(event.request.url);
+  if(url.origin!==location.origin)return;
 
-  if(event.request.mode==='navigate'){
+  const isNavigation=event.request.mode==='navigate';
+  const isCode=/\.(?:html?|js|css)$/i.test(url.pathname);
+
+  if(isNavigation||isCode){
     event.respondWith(
-      fetch(event.request,{cache:'no-store'})
-        .catch(()=>caches.match('./index.html').then(response=>response||Response.error()))
+      fetch(event.request,{cache:'no-store'}).then(response=>{
+        if(response&&response.ok){
+          const copy=response.clone();
+          caches.open(CACHE_NAME).then(cache=>cache.put(event.request,copy));
+        }
+        return response;
+      }).catch(()=>caches.match(event.request).then(response=>
+        response||
+        (isNavigation?caches.match('./index.html'):null)||
+        Response.error()
+      ))
     );
     return;
   }
-
-  if(url.origin!==location.origin)return;
 
   event.respondWith(
     caches.match(event.request).then(cached=>
@@ -74,3 +86,4 @@ self.addEventListener('fetch',event=>{
     )
   );
 });
+

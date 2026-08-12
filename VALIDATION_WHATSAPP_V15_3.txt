@@ -1,0 +1,19 @@
+PASS — JS syntax — project-builder-v14-8.js
+PASS — JS syntax — about-scene-story-v14-7.js
+PASS — JS syntax — customer-account-v14-4.js
+PASS — JS syntax — service-worker.js
+PASS — Builder version 14.8.2
+PASS — Uses configured whatsappNumber
+PASS — 00 prefix normalized
+PASS — No window.open call in project builder
+PASS — Uses direct location.assign
+PASS — wa.me handoff
+PASS — Compact message helper exists
+PASS — Multiple project types included
+PASS — Multiple goals included
+PASS — Multiple styles included
+PASS — Multiple features included
+PASS — Reset module removed from index
+PASS — Reset module removed from SW
+PASS — Builder cache-busted in index
+PASS — SW cache bumped
