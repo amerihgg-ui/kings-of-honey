@@ -1,5 +1,5 @@
 /* NUVEXA HUB V14.2 — cache refresh for order sync + reviews */
-const CACHE_NAME='nuvexa-hub-v15-6-seller-buttons';
+const CACHE_NAME='nuvexa-hub-v15-7-data-accounting';
 const CORE=[
   './index.html',
   './assets/css/app.css?v=12.9',
@@ -8,6 +8,7 @@ const CORE=[
   './assets/css/about-scene-story-v14-7.css?v=14.7.2',
   './assets/css/project-builder-v14-8.css?v=14.8.1',
   './assets/css/seller-approval-v15-6.css?v=15.6',
+  './assets/css/data-accounting-v15-7.css?v=15.7',
   './assets/js/core.js?v=12.9',
   './assets/js/modules/auth.js?v=12.9',
   './assets/js/modules/admin.js?v=12.9',
@@ -27,6 +28,7 @@ const CORE=[
   './assets/js/modules/seller-approval-workflow-v15-6.js?v=15.6',
   './assets/js/modules/about-scene-story-v14-7.js?v=14.7.2',
   './assets/js/modules/project-builder-v15-5.js?v=15.5',
+  './assets/js/modules/data-accounting-v15-7.js?v=15.7',
   './manifest.webmanifest?v=12.9',
   './favicon.ico?v=12.9',
   './assets/branding/favicon-nuvexa-v10-2-32.png?v=12.9',

@@ -1,0 +1,30 @@
+PASS — JS syntax — data-accounting-v15-7.js
+PASS — JS syntax — seller-approval-workflow-v15-6.js
+PASS — JS syntax — project-builder-v15-5.js
+PASS — JS syntax — service-worker.js
+PASS — SQL record-level table
+PASS — SQL record-level save RPC
+PASS — SQL inventory operation table
+PASS — SQL concurrent/idempotent stock RPC
+PASS — SQL detects already-cloud-applied result
+PASS — No TRUNCATE in V15.7 SQL
+PASS — No DELETE FROM in V15.7 SQL
+PASS — Manual orders persisted
+PASS — Manual sales invoices persisted
+PASS — Product batches/ops persisted
+PASS — Inventory outbox survives reload
+PASS — Accounting separates gross profit
+PASS — Operating profit excludes purchases
+PASS — Working position includes inventory
+PASS — Supplier debt separate
+PASS — Liquidity deficit separate
+PASS — Corrected accounting export
+PASS — Index loads V15.7 JS
+PASS — Index loads V15.7 CSS
+PASS — Build marker 15.7
+PASS — Service worker cache bumped
+PASS — Seller V15.6 retained
+PASS — WhatsApp builder V15.5 retained
+PASS — No V16 License Core included
+PASS — Old destructive reset script not packaged
+PASS — Old destructive reset SQL not packaged

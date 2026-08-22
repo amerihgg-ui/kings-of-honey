@@ -1,0 +1,20 @@
+/* NUVEXA HUB V15.7 — accounting clarity + cloud sync indicator */
+.nx157-account-note{
+  margin:12px 0 16px;padding:12px 14px;border-radius:12px;
+  border:1px solid rgba(194,145,48,.22);background:rgba(194,145,48,.055);
+  color:var(--text,#18202a);font-size:12px;line-height:1.75
+}
+.nx157-account-note strong{color:var(--gold2,#b98221)}
+.nx157-sync-pill{
+  position:fixed;left:16px;bottom:16px;z-index:9000;padding:7px 10px;border-radius:999px;
+  background:rgba(12,25,38,.92);color:#dbe6ef;border:1px solid rgba(255,255,255,.1);
+  font-size:10px;font-weight:800;opacity:0;pointer-events:none;transform:translateY(6px);
+  transition:.2s ease
+}
+.nx157-sync-pill.show{opacity:1;transform:none}
+.nx157-sync-pill.error{background:#4a171b;color:#ffd9dd}
+
+.nx157-liability{
+  color:#b7791f!important;
+  font-weight:900;
+}
